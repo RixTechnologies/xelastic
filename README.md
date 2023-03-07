@@ -12,10 +12,11 @@ The xelastic class provides basic methods to handle requests to the elasticsearc
   * indexes will be split by month on field 'created'
   * we will use one source src
   * the prefix for our application indexes will be ta
-* The above means our application indexes will have names ta-cst-src-<yyyy-mm> where yyyy is a year and mm is a month number
+* The above means our application indexes will have names ta-cst-src-\<yyyy-mm\> where yyyy is a year and mm is a month number
 * Create index template for cst index using ta-cst* as a template pattern 
 * create the sample configuration dictionary
 
+ ```python
  conf = {'es': {
             'connection': {
                 'current': 'local',
@@ -25,5 +26,6 @@ The xelastic class provides basic methods to handle requests to the elasticsearc
             'indexes': {
                 'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
     }}
+'''
 
- ### Index the customers index using bulk indexing
+### Index the customers index using bulk indexing
