@@ -26,6 +26,6 @@ The xelastic class provides basic methods to handle requests to the elasticsearc
             'indexes': {
                 'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
     }}
-'''
+```
 
 ### Index the customers index using bulk indexing
