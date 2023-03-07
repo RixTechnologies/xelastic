@@ -4,6 +4,7 @@ Interface class for Elasticsearch. Features easy handling of scroll and bulk req
 The xelastic class provides basic methods to handle requests to the elasticsearch indexes. To start using xelastic you should first:
 * design the indexes you need in your application and create the index templates
 * create the configuration dictionary
+When indexing the data xelastic will automatically save it into index of the correct time span.
 
 ## Quick start
 * Download the code file xelastic.py
@@ -28,4 +29,36 @@ The xelastic class provides basic methods to handle requests to the elasticsearc
     }}
 ```
 
-### Index the customers index using bulk indexing
+### Bulk indexing the customers index
+
+ ```python
+ from xelastic import xelastic
+ es_to = xelastic(conf, 'customers')
+ es_to.bulk_set()
+ while True:
+   # Create the dictionary item with customer data here
+   # item = {'name': 'John', 'adress': 'Borneo', 'created': <e.g. current time> }
+   if not item:
+     break # end of the data to index
+   es_to.bulk_index(item)
+
+es_to.bulk_close()
+```
+Method bulk_index() adds data to the bulk and saves the bulk to the index as soon as it is full.
+Method bulk_close() saves to the index the data left in the bulk at the end of the process.
+
+### Retrieving the data with scroll
+
+```python
+from xelastic import xelastic
+es_from = xelastic(conf, 'customers')
+es_from.scroll_set()
+while item != es_from.scroll():
+  # Handle the item data
+
+es_from.scroll_close()
+```
+Method scroll() takes next item from the scroll buffer and retrieves the next scroll batch when
+the buffer empty.
+Method scroll_close() removes the scroll request.
+
