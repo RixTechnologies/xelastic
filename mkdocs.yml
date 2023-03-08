@@ -1,0 +1,14 @@
+site_name: xelastic
+
+theme:
+  name: "material"
+
+plugins:
+  - mkdocstrings
+
+nav:
+  - Quick Start: index.md
+  - Tutorial: tutorials.md
+  - How-To: how-to-guides.md
+  - reference.md
+  - explanation.md

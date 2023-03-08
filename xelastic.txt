@@ -1,0 +1,308 @@
+Help on module xelastic:
+
+NAME
+    xelastic - Created on Wed Apr 14 10:56:39 2021
+
+DESCRIPTION
+        Elasticsearch interface class. Provides easy handling of scroll and bulk
+        requests as well as handling of time split indexes.
+    
+        External methods
+            setSource
+            indexName
+            start
+            end
+            request
+            getIndexes
+            deleteIndexes
+            getData
+            getDataX
+            save
+            existsIndex
+            countIndex
+            queryIndex
+            aggIndex
+            queryBuckets
+            queryCardinality
+            setRefresh
+            createTermFilter
+            setUpdBody
+            updateFields
+            updateFieldsById
+            ========== Scroll API
+            scroll_set
+            scroll_total
+            scroll
+            scroll_close
+            ========== Bulk API
+            bulk_set
+            bulk_index
+            bulk_close
+            ==========
+            termvectors
+            mlt
+    
+        The xelastic class uses index names of the format: prefix-stub-source-span
+        Where
+            prefix is shared by all indexes of the application
+            stub identifies indexes of a particular type
+            source identifies a particular data set
+            span identifies a particular time period (span)
+    
+        prefix-stub is used in index templates thus these are indexes with identic
+        settings and mappings
+    
+        esconf is the dictionary of the following form
+                connection:
+                    current: <name of the selected connection>
+                    <Name of the connection 1>:
+                        client: <client url>
+                        cert: <path to the certificte file>, optional
+                        usr: [<user name>, <password>] for authentification, optional
+                    <Name of the connection 2>:
+                    ... 
+                prefix: <prefix of the application index names>
+                source: <application default source ID>
+                indexes:
+                    <index key 1>:
+                        stub: <stub>
+                        span_type: <valid span type id: d, m, q, y or n>
+                        date_field: <date field to split the indexes on>, must be set
+                                for all span types except n
+                        shared: <True or False>, specifies the index shared for all
+                                sources, default False, optional
+                    <index key 2>
+                    ...
+                keep: <time to keep scroll batch> defaults to '10s'
+                scroll_size: <amoun of the scroll batch in bytes> defaults to 100
+                max_buckets: <maximum buckets in es aggregation>, defaults to 99
+                index_bulk: <number of rows in an index bulk>, defaults to 1000
+                high: <Maximum allowed used disk space %>, defaults to 90%, execution
+                        is aborted if the used space is higher
+                headers: <headers for the http request>,
+                        defaults to {Content-Type: application/json}
+        
+    
+        Response codes: 200 (ok), 201 (created succesfully), 400 (bad request), 401 (not authorised)
+    
+    @author: juris.rats
+
+CLASSES
+    builtins.object
+        xelastic
+    
+    class xelastic(builtins.object)
+     |  xelastic(esconf: dict, index_key=None, terms=None, mode=None)
+     |  
+     |  Methods defined here:
+     |  
+     |  __init__(self, esconf: dict, index_key=None, terms=None, mode=None)
+     |      Initializes the instance:
+     |          esconf - configuration dictionary for the Elasticsearch connection
+     |          index_key - the index key for the instance
+     |          terms - terms dictionary of form {key1: value1, key2: value2, ...}
+     |              to handle subset of the data
+     |          mode - may set mode for all requests for the current class instance
+     |  
+     |  __repr__(self)
+     |      Return repr(self).
+     |  
+     |  __str__(self)
+     |      Return str(self).
+     |  
+     |  aggIndex(self, body: dict, mode: str = None) -> Optional[list]
+     |      Returns list of returned rows of aggregated values and count of documents in smaller groups
+     |      Adds self.filter if set
+     |  
+     |  bulk_close(self, mode=None)
+     |      Flushes the last batch to the index and sets refresh interval to 1 second
+     |      
+     |      Returns True if no errors in flush and setRefresh
+     |  
+     |  bulk_index(self, item, action=None, xid=None, mode=None)
+     |      Adds the item data to the bulk. If bulk full flush it
+     |  
+     |  bulk_set(self, refresh=None, refresh_interval=None, bulk_max=None, mode=None)
+     |      Initializes a bulk index
+     |      If included in the call bulk_max overrides one set on class initialization
+     |      
+     |      refresh is transfered to the request method. Possible values - None
+     |      
+     |      Sets the refresh interval if specified in <refresh_interval>
+     |      
+     |      Mode not used in this call
+     |  
+     |  countIndex(self, body=None, mode=None)
+     |      Counts the items in index_key according to the criteria in body
+     |      Adds self.filter if set
+     |  
+     |  createTermFilter(self, terms: dict)
+     |      Creates terms filter ([{"term": {<field>: <value>}}, ...]) from the
+     |      <terms> dictionary
+     |  
+     |  deleteIndexes(self, indexes, mode=None)
+     |      Deletes indexes of the list <indexes>
+     |      Returns True if all indexes deleted succesfully
+     |  
+     |  end(self, span: str) -> Optional[int]
+     |      Returns the end epoch of the span
+     |  
+     |  existsIndex(self, mode=None)
+     |      Returns True if index exists, false otherwise
+     |  
+     |  getData(self, xid, mode=None)
+     |      Retrieve data for <xid> from the current index
+     |      
+     |      Returns the item data (_source) or None if item with id <xid> not found
+     |  
+     |  getDataX(self, xid, mode=None)
+     |      Retrieve data for <xid> from the current index
+     |      
+     |      Returns the full json (_source and metadata) or None if item with id <xid> not found
+     |  
+     |  getIndexes(self)
+     |      Return a list of existing index names for the index key
+     |  
+     |  indexName(self, epoch: int = None) -> Optional[str]
+     |      Get index name for the stub, source and epoch.
+     |      
+     |      If span_type == 'n' SPAN_ALL is used as span in the index name
+     |      Otherwise
+     |          if epoch set span is calculated from the epoch
+     |          else * is used for span (all spans addressed)
+     |  
+     |  mlt(self, xids: list, mlt_conf: dict, mode=None) -> dict
+     |      Retrieves more-like-this query for <xids> and configuration <mlt_conf>
+     |  
+     |  queryBuckets(self, field: str, query: Dict[str, Any] = None, max_buckets: int = None, quiet: bool = False, mode=None) -> Tuple[Dict[str, int], int]
+     |      Retrieves the buckets data on <field>.
+     |      
+     |      Returns a dictionary of form key: doc count, and the number of other
+     |      documents (not aggregated)
+     |      
+     |      If quiet==False logs sum_other_doc_count
+     |  
+     |  queryCardinality(self, field: str) -> int
+     |      Retrieve the number of unique values of <field> (cardniality)
+     |      Adds self.filter if set
+     |  
+     |  queryIndex(self, body, mode=None)
+     |      Returns list of requested rows and total count of matching rows
+     |      If no results - returns empty list and 0
+     |      When error returns empty list and the error type (string)
+     |      Adds self.filter if set
+     |  
+     |  request(self, command='POST', endpoint='', seq_primary=None, refresh=None, body: dict = None, xdate=None, use_index_key=True, mode=None)
+     |      Wrapper on _request_json. Converts dictionary <body> to json string
+     |      
+     |      NB!! Does not use self.filter
+     |  
+     |  save(self, body, xid=None, seq_primary=None, refresh=None, xdate=None, mode=None)
+     |      Index an item
+     |      Adds to the data body self.terms to save the data of the terms fields
+     |      
+     |      Returns id of the created item or None on failure
+     |  
+     |  scroll(self, mode=None)
+     |      Returns the next item from the scroll buffer (the item of ES hits list).
+     |      
+     |      If the process is not initialized yet executes the first scroll request
+     |      If the buffer is empty, retrieves the next batch of items
+     |  
+     |  scroll_close(self, mode=None)
+     |      Removes the scroll buffer.
+     |  
+     |  scroll_set(self, body=None, mode=None)
+     |      Initializes a new scroll. Scroll is set no matter of mode value.
+     |      
+     |      Batch ends when scroll returns None
+     |  
+     |  scroll_total(self, mode=None)
+     |      Retrieves the total count of rows matching the request
+     |      ES count method used as search does not return the exact count for
+     |      large sets
+     |  
+     |  setRefresh(self, period='1s', mode=None)
+     |      Sets refresh interval for the index xkey to period.
+     |      Period has form 'xxxs' where xxx is number of seconds
+     |  
+     |  setSource(self, source)
+     |      Changes the source
+     |  
+     |  setUpdBody(self, name: str, upd_fields: list = None, del_fields: list = None, mode=None)
+     |      name - name of th update script
+     |      upd_fields - fields to update
+     |      del_fields - fields to remove
+     |      mode not used
+     |  
+     |  start(self, span: str) -> Optional[int]
+     |      Returns the start epoch of the span
+     |  
+     |  termvectors(self, xid: str, xfield: str, mode=None)
+     |      Retrieves term vector data for the item <id>
+     |  
+     |  updateFields(self, name: str, xfilter: dict, values: dict = None, xdate=None, refresh=None, mode=None)
+     |      Update / delete fields for items filtered by xfilter (update by query)
+     |      If update body <name> has update fields, <values> must be specified
+     |      
+     |      Returns number of updated items if updates successful, -1 otherwise
+     |      Logs errors on failure
+     |      {"took": ?, "timed_out": false, "total": ?, "updated": ?, ...}
+     |  
+     |  updateFieldsById(self, name: str, xid: str, values: dict = None, xdate=None, seq_primary=None, refresh=None, mode=None)
+     |      Update fields for item with ident <xid>
+     |      
+     |      If <seq_primary> is specified as a tuple (item_seq, primary_term),
+     |      updates only if the _item_seq and _primary_term of the item
+     |      matches ones specified
+     |      
+     |      Returns the update response in form
+     |      {'_index': ?, '_type': '_doc', '_id': ?, '_version': ?, 'result': 'updated',
+     |       '_shards': {'total': ?, 'successful': ?, 'failed': ?},
+     |       '_seq_no': ?, '_primary_term': ?}
+     |      
+     |      or None on failure
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors defined here:
+     |  
+     |  __dict__
+     |      dictionary for instance variables (if defined)
+     |  
+     |  __weakref__
+     |      list of weak references to the object (if defined)
+
+DATA
+    Any = typing.Any
+        Special type indicating an unconstrained type.
+        
+        - Any is compatible with every type.
+        - Any assumed to have all methods.
+        - All values assumed to be instances of Any.
+        
+        Note that all the above statements are true from the point of view of
+        static type checkers. At runtime, Any should not be used with instance
+        or class checks.
+    
+    Dict = typing.Dict
+        A generic version of dict.
+    
+    Optional = typing.Optional
+        Optional type.
+        
+        Optional[X] is equivalent to Union[X, None].
+    
+    SPAN_ALL = 'all'
+    Tuple = typing.Tuple
+        Tuple type; Tuple[X, Y] is the cross-product type of X and Y.
+        
+        Example: Tuple[T1, T2] is a tuple of two elements corresponding
+        to type variables T1 and T2.  Tuple[int, float, str] is a tuple
+        of an int, a float and a string.
+        
+        To specify a variable-length tuple of homogeneous type, use Tuple[T, ...].
+
+FILE
+    c:\proto\es_manage\mdl\xelastic.py
+
+
