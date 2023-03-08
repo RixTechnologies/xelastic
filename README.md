@@ -6,6 +6,8 @@ The xelastic class provides basic methods to handle requests to the elasticsearc
 * create the configuration dictionary
 When indexing the data xelastic will automatically save it into index of the correct time span.
 
+Visit the project pages [here](https://jurisra.github.io/xelastic)
+
 ## Quick start
 * Download the code file xelastic.py
 * Design the indexes of your application, e.g.
