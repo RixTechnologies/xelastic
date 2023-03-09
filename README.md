@@ -41,16 +41,6 @@ Visit the project pages [here](https://jurisra.github.io/xelastic)
  import time
 from xelastic import xelastic
 
-conf = {
-    'connection': {
-        'current': 'local',
-        'local': {'client': 'http://localhost:9200/'}},
-    'prefix': 'ta',
-    'source': 'src',
-    'indexes': {
-        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
-   }
-
 items = [{"name": "John", "email": "john@xelastic.com", "phone": "12345678"}, ...]
 
 es_to = xelastic(conf, 'customers') # Create xelastic instance for customers index
