@@ -38,20 +38,31 @@ Visit the project pages [here](https://jurisra.github.io/xelastic)
 ### Bulk indexing the customers index
 
  ```python
- from xelastic import xelastic
- es_to = xelastic(conf, 'customers')
- es_to.bulk_set()
- while True:
-   # Create the dictionary item with customer data here
-   # item = {'name': 'John', 'adress': 'Borneo', 'created': <e.g. current time> }
-   if not item:
-     break # end of the data to index
-   es_to.bulk_index(item)
+ import time
+from xelastic import xelastic
 
-es_to.bulk_close()
+conf = {
+    'connection': {
+        'current': 'local',
+        'local': {'client': 'http://localhost:9200/'}},
+    'prefix': 'ta',
+    'source': 'src',
+    'indexes': {
+        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
+   }
+
+items = [{"name": "John", "email": "john@xelastic.com", "phone": "12345678"}, ...]
+
+es_to = xelastic(conf, 'customers') # Create xelastic instance for customers index
+es_to.bulk_set() # Initialize the bulk indexing
+for item in items:
+    item['updated'] = int(time.time()) # Set updated to the current timestamp
+    # Add the current item to the bulk buffer; this sends a bulk to ES index when
+    # buffer is full
+    es_to.bulk_index(item)
+
+es_to.bulk_close() # Sends the latest bulk to the ES index
 ```
-Method bulk_index() adds data to the bulk and saves the bulk to the index as soon as it is full.
-Method bulk_close() saves to the index the data left in the bulk at the end of the process.
 
 ### Retrieving the data with scroll
 
