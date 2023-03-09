@@ -15,8 +15,8 @@ Visit the project pages [here](https://jurisra.github.io/xelastic)
   * indexes will be split by month on field 'created'
   * we will use one source src
   * the prefix for our application indexes will be ta
-* The above means our application indexes will have names ta-cst-src-\<yyyy-mm\> where yyyy is a year and mm is a month number
-* Create index template for cst index using ta-cst* as a template pattern 
+* The above means our application indexes will have names ta-cst-src-\<yyyy-mm\> where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index
+* Create index template for cst index using ta-cst* as a template pattern; this will ensure the monthly indexes are created automatically when necessary
 * create the sample configuration dictionary
 
  ```python
