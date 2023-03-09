@@ -1,5 +1,8 @@
 # xelastic
-Interface class for Elasticsearch. Features easy handling of scroll and bulk requests as well as handling of time spanned indexes
+Interface class for Elasticsearch. Features
+* easy handling of scroll and bulk requests
+* easy updates
+* handling of time spanned indexes
 
 The xelastic class provides basic methods to handle requests to the elasticsearch indexes. To start using xelastic you should first:
 * design the indexes you need in your application and create the index templates
