@@ -15,8 +15,8 @@ Visit the project pages [here](https://jurisra.github.io/xelastic)
 ## Quick start
 * Download the code file xelastic.py
 * Design the indexes of your application, e.g.
-  * one index type cst with data of your customers having fields 'name', 'address' and 'created'
-  * indexes will be split by month on field 'created'
+  * one index type cst with data of your customers having fields 'name', 'street_address', 'email', 'phone' and 'updated'
+  * indexes will be split by month on field 'updated'
   * we will use one source src
   * the prefix for our application indexes will be ta
 * The above means our application indexes will have names ta-cst-src-\<yyyy-mm\> where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index
@@ -31,7 +31,7 @@ Visit the project pages [here](https://jurisra.github.io/xelastic)
             'prefix': 'ta',
             'source': 'src'
             'indexes': {
-                'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
+                'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
     }}
 ```
 
