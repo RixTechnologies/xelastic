@@ -58,14 +58,36 @@ es_to.bulk_close() # Sends the latest bulk to the ES index
 
 ```python
 from xelastic import xelastic
-es_from = xelastic(conf, 'customers')
-es_from.scroll_set()
-while item != es_from.scroll():
-  # Handle the item data
+es_from = xelastic(conf, 'customers') # Create xelastic instance for customers index
+es_from.scroll_set() # Initialize the scroll requests
+# Retrieve an item from the scroll batch. Retrieve next batch if the current one
+# is empty
+while item := es_from.scroll():
+  print(item)
 
-es_from.scroll_close()
+es_from.scroll_close() # Removes the scroll buffer
 ```
-Method scroll() takes next item from the scroll buffer and retrieves the next scroll batch when
-the buffer empty.
-Method scroll_close() removes the scroll request.
+ ### Updating the fields with 
+ ```python
+import time
+from xelastic import xelastic
 
+xes = xelastic(conf, 'customers') # Create xelastic instance for customers index
+xes.setUpdBody('update1', upd_fields=['phone', 'email'])
+xes.setUpdBody('update2', upd_fields=['phone'], del_fields=['email'])
+print(xes.upd_bodies)
+print()
+
+# update fields by query
+xes.updateFields('update1', xfilter={'term': {'name': 'Jane'}},
+                values = {'phone': '4242424242', 'email': 'Jane_new@xelastic.com'})
+
+# update fields by item id  (points to the item for John)
+# must specify xdate to identify the time span (and index) the item to update is located
+xes.updateFieldsById('update2', xid='v1iHxoYB1hLWYRnWTupi', xdate=int(time.time()),
+                values = {'phone': '66666666'})
+
+# Print the updated index
+hits, _ = xes.queryIndex()
+print(hits)
+```
