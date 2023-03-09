@@ -29,7 +29,7 @@ Visit the project pages [here](https://jurisra.github.io/xelastic)
                 'current': 'local',
                 'local': {'client': 'http://localhost:9200/'}},
             'prefix': 'ta',
-            'source': 'src'
+            'source': 'src',
             'indexes': {
                 'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
     }}
