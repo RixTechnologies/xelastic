@@ -65,8 +65,9 @@ Created on Wed Apr 14 10:56:39 2021
                 <index key 1>:
                     stub: <stub>
                     span_type: <valid span type id: d, m, q, y or n>
-                    date_field: <date field to split the indexes on>, must be set
-                            for all span types except n
+                    date_field: <main date field of the index - the date field
+                            to split the indexes on>, must be set for all span
+                            types except n
                     shared: <True or False>, specifies the index shared for all
                             sources, default False, optional
                 <index key 2>
@@ -105,7 +106,8 @@ class xelastic():
             esconf - configuration dictionary for the Elasticsearch connection
             index_key - the index key for the instance
             terms - terms dictionary of form {key1: value1, key2: value2, ...}
-                to handle subset of the data
+                if set queries and aggregations use this as additional filter
+                (i.e. xelastic instance gets access to a part of the index)
             mode - may set mode for all requests for the current class instance
         """
         self.mode = mode
@@ -113,7 +115,7 @@ class xelastic():
         self.source = esconf['source']
         if index_key:
             assert index_key in esconf['indexes'].keys(), \
-                f"Nepareiza indeksa atslēga {index_key}"
+                f"Wrong index key {index_key}"
 
         # Handle index configuration
         index_conf = esconf['indexes'][index_key]
@@ -252,7 +254,7 @@ class xelastic():
         """
         Wrapper on _request_json. Converts dictionary <body> to json string
         
-        NB!! Does not use self.filter
+        NB!! Does not use self.terms
         """
         data = json.dumps(body) if body else None
         return self._request_json(command, endpoint, seq_primary, refresh, data,
@@ -398,7 +400,6 @@ class xelastic():
         Returns True if index exists, false otherwise
         """
         index_name = self.indexName()
-        #index_name = 'xxx'
         endpoint = f"_cat/indices/{index_name}?h=s,idx&format=json"
         resp = self.request(mode=mode,
             command='GET', endpoint=endpoint, use_index_key=False)
@@ -409,7 +410,7 @@ class xelastic():
     def countIndex(self, body=None, mode=None):
         """
         Counts the items in index_key according to the criteria in body
-        Adds self.filter if set
+        Adds self.terms filter if set
         """
         resp = self.request(endpoint="_count", body=self._addFilter(body),
                             mode=mode)
@@ -420,12 +421,12 @@ class xelastic():
             logger.error(resp.text, stack_info=True)
             return 0
 
-    def queryIndex(self, body, mode=None):
+    def queryIndex(self, body=None, mode=None):
         """
         Returns list of requested rows and total count of matching rows
         If no results - returns empty list and 0
         When error returns empty list and the error type (string)
-        Adds self.filter if set
+        Adds self.terms filter if set
         """
         resp = self.request(endpoint="_search", body=self._addFilter(body),
                             mode=mode)
@@ -443,7 +444,7 @@ class xelastic():
     def aggIndex(self, body:dict, mode:str=None) -> Optional[list]:
         """
         Returns list of returned rows of aggregated values and count of documents in smaller groups
-        Adds self.filter if set
+        Adds self.terms filter if set
         """
         resp = self.request(endpoint="_search", body=self._addFilter(body),
                             mode=mode)
@@ -491,7 +492,7 @@ class xelastic():
     def queryCardinality(self, field: str) -> int:
         """
         Retrieve the number of unique values of <field> (cardniality)
-        Adds self.filter if set
+        Adds self.terms filter if set
         """
         body = {"size": 0,
           "aggs": {
@@ -527,17 +528,15 @@ class xelastic():
         """
         return [{"term": {key, val}} for key, val in terms]
 
-    def _addFilter(self, body=None, mode=None):
+    def _addFilter(self, body:dict=None, mode:str=None):
         """
         If self.terms set creates new filter merging body/query and self.terms
 
         Uses a copy of the body parameter to avoid changing the parameter value
 
         Otherwise just returns body
-        
-        NB. Query transfered in the body parameter must be a list!!
         """
-        
+        assert any((body is None, isinstance(body, dict))), 'body must be a dict'
         if not self.terms:
             return {} if body is None else body
 
@@ -545,7 +544,7 @@ class xelastic():
         xfilter = self.createTermFilter(self.terms)
         query = xbody.get('query')
         if not query:
-            # Set self.filter as a query
+            # If body has no query set query to the terms filter
             xbody['query'] = xfilter
         elif query and 'bool' in query:
             # the body query is a bool query
@@ -563,12 +562,15 @@ class xelastic():
 
     def setUpdBody(self, name: str, upd_fields: list = None, del_fields: list = None, mode=None):
         """
-        name - name of th update script
-        upd_fields - fields to update
-        del_fields - fields to remove
-        mode not used
-        """
+        Create and save in upd_bodies the update dictionary. Uses _updFields to
+        create script source.
         
+        Parameters:
+            name - name of th update script
+            upd_fields - fields to update
+            del_fields - fields to remove
+            mode not used
+        """
         self.upd_bodies[name] = {"script": {
                 "source": self._updFields(upd_fields, del_fields),
                 "lang": "painless"}}
@@ -578,6 +580,19 @@ class xelastic():
         """
         Update / delete fields for items filtered by xfilter (update by query)
         If update body <name> has update fields, <values> must be specified
+
+        Parameters:
+            name - name of the update body (created by setUpdBody)
+            xfilter - query to select items for update
+            values - a dictionary of field names and values, names must match
+                what is set in setUpdBody
+            xdate - value of the main date field of the item to update; used 
+                    to identify the index the item is saved in
+            refresh:
+                - not set or False - no refresh actions
+                - wait for - waits for the refresh to proceed
+                - empty string or true (not recommended) - immedially refreh the
+                      relevant index shards
 
         Returns number of updated items if updates successful, -1 otherwise
         Logs errors on failure
@@ -624,21 +639,30 @@ class xelastic():
         
         or None on failure
         """
+        assert any((self.span_type=='n', xdate)), \
+            "xdate must be specified for all span types except 'n'"
         body = self.upd_bodies[name]
         if values:
             body['script']['params'] = values
-        endpoint = '/'.join(('_doc', xid, "_update"))
+        endpoint = '/'.join(('_update', xid))
 
         resp = self.request(endpoint=endpoint, seq_primary=seq_primary,
                             refresh=refresh, body=body, xdate=xdate, mode=mode)
         if resp.status_code != 200:
             logger = logging.getLogger(__name__)
-            logger.info(f"Status {resp.status_code} {endpoint} date {xdate} " 
+            logger.error(f"Status {resp.status_code} {endpoint} date {xdate} " 
                         f"{seq_primary} {refresh} {body}\n {resp.text}")
             return None
         return resp.json()
 
-    def _updFields(self, upd_fields=None, del_fields=None):
+    def _updFields(self, upd_fields:list=None, del_fields:list=None) -> str:
+        """
+        Creates and returns the source of the update script
+        
+        Parameters:
+          upd_fields - list of the names of fields to update
+          del_fields - list of the names of fields to delete
+        """
         upd_script =  [] if not upd_fields else \
             [f"ctx._source.{field}=params['{field}']" for field in upd_fields]
         del_script =  [] if not del_fields else   \
@@ -670,9 +694,7 @@ class xelastic():
 
     def scroll_total(self, mode=None):
         """
-        Retrieves the total count of rows matching the request
-        ES count method used as search does not return the exact count for
-        large sets
+        Retrieves the total count of rows matching the scroll request
         """
         return self.countIndex(self.body, mode=mode)
 
@@ -753,7 +775,6 @@ class xelastic():
         self.bulk_refresh = refresh
         if refresh_interval:
             self.setRefresh(period=refresh_interval)
-        self.bulk_date_field = self.index.date_field
         if bulk_max:
             self.bulk_max = bulk_max
         self.__bulk_clear()
@@ -779,7 +800,7 @@ class xelastic():
             action = 'index' # Set index action if not specified
         # If span type is not n (date_field set) transfer the item date
         # as it is used to create the index name
-        xdate = None if not self.bulk_date_field else item[self.bulk_date_field]
+        xdate = None if not self.date_field else item[self.date_field]
         bulk_action = self.__bulk_create_action(action=action, xid=xid, xdate=xdate)
 
         bulk_item = f"{bulk_action}\n{json.dumps(item)}\n"
@@ -821,8 +842,7 @@ class xelastic():
         Returns basic bulk action for bulk indexing
         Handles differences between ES versions prior to 7 (demands _type) and 7 (does not allow _type)
         """
-        index_name = self.index.getIndexName(
-            self.source, epoch=xdate)
+        index_name = self.indexName(epoch=xdate)
         xaction = {"_index": index_name}
         if self.es_version < 7:
             xaction["_type"] = "_doc"
