@@ -67,7 +67,7 @@ while item := es_from.scroll():
 
 es_from.scroll_close() # Removes the scroll buffer
 ```
- ### Updating the fields with 
+ ### Updating the fields by query and by ID
  ```python
 import time
 from xelastic import xelastic
