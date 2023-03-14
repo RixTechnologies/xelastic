@@ -38,8 +38,11 @@ Created on Thu Mar  9 14:14:41 2023
 
 @author: juris.rats
 """
-import time
+import time, logging
 from xelastic import xelastic
+
+logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO,
+    format= "%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
 
 conf = {
     'connection': {
@@ -58,7 +61,9 @@ items = [
     ]
 
 es_to = xelastic(conf, 'customers') # Create xelastic instance for customers index
-es_to.bulk_set() # Initialize the bulk indexing
+
+es_to.bulk_set(refresh='wait_for') # Initialize the bulk indexing
+
 for item in items:
     item['updated'] = int(time.time()) # Set updated to the current timestamp
     # Add the current item to the bulk buffer; this sends a bulk to ES index when

@@ -7,13 +7,8 @@ See sample_bulk for additional information
 
 @author: juris.rats
 """
-# import logging
 import time
 from xelastic import xelastic
-
-# logging.basicConfig(handlers=[logging.StreamHandler()],
-#                     level=logging.INFO)
-#                    format=cnst.LOG_FORMAT)
 
 conf = {
     'connection': {
@@ -27,20 +22,23 @@ conf = {
 
 
 xes = xelastic(conf, 'customers') # Create xelastic instance for customers index
-xes.setUpdBody('update1', upd_fields=['phone', 'email'])
-xes.setUpdBody('update2', upd_fields=['phone'], del_fields=['email'])
+xes.set_upd_body('update1', upd_fields=['phone', 'email'])
+xes.set_upd_body('update2', upd_fields=['phone'], del_fields=['email'])
 print(xes.upd_bodies)
 print()
 
 # update fields by query
-xes.updateFields('update1', xfilter={'term': {'name': 'Jane'}},
-                values = {'phone': '4242424242', 'email': 'Jane_new@xelastic.com'})
+xes.update_fields('update1', xfilter={'term': {'name': 'Jane'}},
+               values = {'phone': '4242424242', 'email': 'Jane_new@xelastic.com'})
 
-# update fields by item id  (points to the item for John)
+# update fields by item id
+hits, _ = xes.query_index(body={"query": {"term": {"name": "John"}}})
+xid = hits[0]["_id"] # retrieve the item id
+
 # must specify xdate to identify the time span (and index) the item to update is located
-xes.updateFieldsById('update2', xid='v1iHxoYB1hLWYRnWTupi', xdate=int(time.time()),
-                values = {'phone': '66666666'})
+xes.update_fields_by_id('update2', xid=xid, xdate=int(time.time()),
+                values = {'phone': '66666666'}, refresh='wait_for')
 
 # Print the updated index
-hits, _ = xes.queryIndex()
+hits, _ = xes.query_index()
 print(hits)
