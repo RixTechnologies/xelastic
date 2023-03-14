@@ -7,3 +7,4 @@ src/xelastic.egg-info/PKG-INFO
 src/xelastic.egg-info/SOURCES.txt
 src/xelastic.egg-info/dependency_links.txt
 src/xelastic.egg-info/top_level.txt
+tests/test_xelastic.py

@@ -4,9 +4,6 @@ Version: 1.0.0
 Summary: "Easy interface class to Elasticsearch."
 Author: "Juris Rats"
 Author-email: "jurisra@gmail.com"
-Classifier: Programming Language :: Python :: 3
-Classifier: License :: OSI Approved :: MIT License
-Classifier: Operating System :: OS Independent
 Description-Content-Type: text/markdown
 License-File: LICENSE.txt
 
