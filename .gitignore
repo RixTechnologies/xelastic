@@ -3,6 +3,5 @@
 *.pyc
 *.pyo
 env*
-build/
 .spyproject
-__pycache__
+__pycache__/
