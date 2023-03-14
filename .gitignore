@@ -5,3 +5,4 @@
 env*
 .spyproject
 __pycache__/
+site/
