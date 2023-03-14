@@ -1,5 +1,30 @@
-# How-to guides
-## How to set xelastic up
+Metadata-Version: 2.1
+Name: xelastic
+Version: 1.0.0
+Summary: "Easy interface class to Elasticsearch."
+Author: "Juris Rats"
+Author-email: "jurisra@gmail.com"
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+
+# xelastic
+Interface class for Elasticsearch. Features
+* easy handling of scroll and bulk requests
+* easy updates
+* handling of time spanned indexes
+
+The xelastic class provides basic methods to handle requests to the elasticsearch indexes. To start using xelastic you should first:
+* design the indexes you need in your application and create the index templates
+* create the configuration dictionary
+
+When indexing the data xelastic will automatically save it into index of the correct time span.
+
+Visit the project pages [here](https://jurisra.github.io/xelastic)
+
+## Quick start
 * Download the code file xelastic.py
 * Design the indexes of your application, e.g.
   * one index type cst with data of your customers having fields 'name', 'street_address', 'email', 'phone' and 'updated'
@@ -8,7 +33,7 @@
   * the prefix for our application indexes will be ta
 * The above means our application indexes will have names ta-cst-src-\<yyyy-mm\> where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index
 * Create index template for cst index using ta-cst* as a template pattern; this will ensure the monthly indexes are created automatically when necessary
-* create the configuration dictionary (reference to full description of config dictionary)
+* create the sample configuration dictionary
 
 ```python
 conf = {
@@ -22,14 +47,10 @@ conf = {
 }
 ```
 
-## How to bulk index the data
-We assume that you have already created and saved into your ES cluster the index template for sample customers index.
-You can use here the sample. [See here](#how-to-set-xelastic-up) for setup and conf sample.
+### Bulk indexing the customers index
 
-The script below will batch index to the customers index the data you will provide in the items list below.
-
-```python
-import time
+ ```python
+ import time
 from xelastic import xelastic
 
 items = [{"name": "John", "email": "john@xelastic.com", "phone": "12345678"}, ...]
@@ -45,8 +66,7 @@ for item in items:
 es_to.bulk_close() # Sends the latest bulk to the ES index
 ```
 
-## How to retrieve data with scroll
-You should use index template and [conf dictionary](#how-to-set-xelastic-up) as well as fill index with some data before to use the script below. You may use [bulk index script](#how-to-bulk-index-the-data) to fill the index.
+### Retrieving the data with scroll
 
 ```python
 from xelastic import xelastic
@@ -59,10 +79,8 @@ while item := es_from.scroll():
 
 es_from.scroll_close() # Removes the scroll buffer
 ```
-## How to update the fields by query and by ID
- You should use index template and [conf dictionary](#how-to-set-xelastic-up) as well as use script described in (link??) to create data before to use the script below.
-
-```python
+ ### Updating the fields by query and by ID
+ ```python
 import time
 from xelastic import xelastic
 
@@ -85,3 +103,14 @@ xes.updateFieldsById('update2', xid='v1iHxoYB1hLWYRnWTupi', xdate=int(time.time(
 hits, _ = xes.queryIndex()
 print(hits)
 ```
+
+MIT License
+
+Copyright (c) 2023 Juris Rats
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

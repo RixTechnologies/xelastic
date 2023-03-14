@@ -23,16 +23,16 @@ Visit the project pages [here](https://jurisra.github.io/xelastic)
 * Create index template for cst index using ta-cst* as a template pattern; this will ensure the monthly indexes are created automatically when necessary
 * create the sample configuration dictionary
 
- ```python
- conf = {'es': {
-            'connection': {
-                'current': 'local',
-                'local': {'client': 'http://localhost:9200/'}},
-            'prefix': 'ta',
-            'source': 'src',
-            'indexes': {
-                'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
-    }}
+```python
+conf = {
+	'connection': {
+		'current': 'local',
+		'local': {'client': 'http://localhost:9200/'}},
+	'prefix': 'ta',
+	'source': 'src',
+	'indexes': {
+		'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
+}
 ```
 
 ### Bulk indexing the customers index

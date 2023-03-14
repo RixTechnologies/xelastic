@@ -1,0 +1,12 @@
+LICENSE.txt
+README.md
+pyproject.toml
+setup.cfg
+src/xelastic.py
+src/xelastic.egg-info/PKG-INFO
+src/xelastic.egg-info/SOURCES.txt
+src/xelastic.egg-info/dependency_links.txt
+src/xelastic.egg-info/top_level.txt
+tests/test_bulk.py
+tests/test_scroll.py
+tests/test_updateFields.py

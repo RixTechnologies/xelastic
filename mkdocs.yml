@@ -1,10 +1,16 @@
 site_name: xelastic
+site_description: Easy access to Elasticsearch indexes
+site_author: Juris Rāts
+
+repo_url: https://github.com/jurisra/xelastic/
+
 
 theme:
   name: "material"
 
 plugins:
   - mkdocstrings
+  #- autorefs
 
 nav:
   - Quick Start: index.md

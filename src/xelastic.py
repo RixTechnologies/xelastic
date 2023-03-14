@@ -6,27 +6,33 @@ Created on Wed Apr 14 10:56:39 2021
     requests as well as handling of time split indexes.
 
     External methods
-        setSource
-        indexName
-        start
-        end
+        set_source
         request
-        getIndexes
-        deleteIndexes
-        getData
-        getDataX
         save
-        existsIndex
-        countIndex
-        queryIndex
-        aggIndex
-        queryBuckets
-        queryCardinality
-        setRefresh
-        createTermFilter
-        setUpdBody
-        updateFields
-        updateFieldsById
+        ========== Retrieve data
+        get_data
+        get_data_x
+        count_index
+        query_index
+        agg_index
+        query_buckets
+        query_cardinality
+        create_term_filter
+        term_vectors
+        mlt
+        ========== Handling indexes
+        get_indexes
+        delete_indexes
+        exists_index
+        set_refresh
+        ========== Handling spans
+        index_name
+        span_start
+        span_end
+        ========== Update API
+        set_upd_body
+        update_fields
+        update_fields_by_id
         ========== Scroll API
         scroll_set
         scroll_total
@@ -37,8 +43,6 @@ Created on Wed Apr 14 10:56:39 2021
         bulk_index
         bulk_close
         ==========
-        termvectors
-        mlt
 
     The xelastic class uses index names of the format: prefix-stub-source-span
     Where
@@ -100,15 +104,20 @@ class xelastic():
     """
     """
 
-    def __init__(self, esconf: dict, index_key=None, terms=None, mode=None):
+    def __init__(self, esconf: dict, index_key:str=None, terms:dict=None,
+                 mode:str=None):
         """
-        Initializes the instance:
-            esconf - configuration dictionary for the Elasticsearch connection
-            index_key - the index key for the instance
-            terms - terms dictionary of form {key1: value1, key2: value2, ...}
-                if set queries and aggregations use this as additional filter
-                (i.e. xelastic instance gets access to a part of the index)
-            mode - may set mode for all requests for the current class instance
+        Initializes the instance.
+        
+        Parameters:
+            esconf: configuration dictionary for the Elasticsearch connection
+            index_key: the index key for the instance
+            terms: terms dictionary of form {key1: value1, key2: value2, ...}
+            mode: may set mode for all requests for the current class instance
+
+        If terms set queries and aggregations use this as additional filter
+        (i.e. xelastic instance gets access to a part of the index)
+
         """
         self.mode = mode
 
@@ -153,12 +162,17 @@ class xelastic():
         self.es_doc = '/_doc/' if self.es_version < 7 else '/'
         self.bulkcurr = None # indicates that bulk indexing is not initialized
         
-        self._usageOk(esconf.get('high', 90), mode=mode) # Aborts if disk usage too high
-        self.setSource(self.source)
+        self._usage_ok(esconf.get('high', 90), mode=mode) # Aborts if disk usage too high
+        self.set_source(self.source)
         
-    def _usageOk(self, high, mode=None):
+    def _usage_ok(self, high:int, mode:str=None):
         """
         Aborts if disk usage is more as configuration es/high value
+        
+        Parameters:
+            high: allowed disk usage (e.g. 90 means the execution will be aborted
+                if disk usage is higher than 90%)
+            
         """
         endpoint = "_cat/allocation"
         resp = self.request(mode=mode,
@@ -166,13 +180,411 @@ class xelastic():
         usage = int(resp.text.split()[5])
         assert usage <= high, f"Disk usage {usage}% - exceeds allowed {high}%"
 
-    def setSource(self, source):
+    def set_source(self, source:str):
         """
         Changes the source
+        
+        Parameters:
+            source: source key
         """
         self.source = source
 
-    def indexName(self, epoch: int = None) -> Optional[str]:
+    def _make_params(self, url:str, params:dict)->str:
+        """
+        Makes parameter string of form ?par1&par2 ... and appends it to the url
+        
+        Params:
+            url: the url to append parameters to
+            params: parameter dictionary (parameter name: value)
+        
+        Returns: url with parameter string appended
+        """
+        return '?'.join((url, urllib.parse.urlencode(params)))
+
+    def request(self, command:str='POST', endpoint:str='', seq_primary:tuple=None,
+                refresh=None, body:dict=None, xdate:int=None, use_index_key:bool=True,
+                mode:str=None) ->requests.Response:
+        """
+        Wrapper on _request_json. Converts dictionary <body> to json string
+        
+        Parameters:
+            command: REST command
+            endpoint: endpoint of the REST request
+            seq_primary: tuple (if_seq_no, if_primary_term) for cuncurrency control
+            refresh: 
+                - not set or False: no refresh actions
+                - wait_for: waits for the refresh to proceed
+                - empty string or true (not recommended): immedially refresh the
+                    relevant index shards
+            body: body of the REST request
+            xdate: date value used to determine the index (for time spanned indexes)
+            use_index_key: If False index name is not appended to the endpoint
+            mode:
+                - None: (run) to run silently
+                - f: (fake) to log parameters without running the request
+                - v: (or any other value - verbose) to run and log data
+
+        Returns:
+            requests.Response object of the requests library
+
+        Mode might be set by the methods parameter or by the instance variable
+        If both set parameter has a precedence.
+
+        NB!! Does not use self.terms
+        """
+        data = json.dumps(body) if body else None
+        return self._request_json(command, endpoint, seq_primary, refresh, data,
+                                  xdate, use_index_key, mode)
+
+    def _request_json(self, command:str='POST', endpoint:str='', seq_primary:tuple=None,
+                refresh=None, data:str=None, xdate:int=None, use_index_key:bool=True,
+                mode:str=None) ->requests.Response:
+        """
+        Wrapper to the requests method request.
+        In most cases called from request method. Directly used e.g. for bulk
+        indexing. 
+        
+        See descriptions of the request method for details. The only difference
+        is the parameter 'data' which is a 'body' dictionary of the request 
+        method converted to json string
+        
+        Returns requests.Response object resp:
+           status_code - http status code
+           text - returned result as a json or text
+           json() - converting the returned result to python list, use
+              only for the requests returning json, do not use for _cat
+        """
+        if not mode: mode = self.mode
+        url = self.es_client
+        if self.index_key and use_index_key:
+            url += self.index_name(xdate) + '/'
+        if endpoint:
+            url += endpoint
+        params = {}
+        if seq_primary:
+            params['if_seq_no'] = seq_primary[0]
+            params['if_primary_term'] = seq_primary[1]
+        if refresh:
+            params['refresh'] = refresh
+        if params: # Add url parameters if specified
+            #req = requests.get(url, params=params)
+            #url = req.url
+            url = self._make_params(url, params)
+
+        if mode:
+            logger = logging.getLogger(__name__)
+            logger.info(f"command {command}, index_key {self.index_key}"
+                        f" url {url} body {data}")
+        if mode == 'f':
+            # execute dummy request
+            return requests.request('GET', self.es_client,
+                            auth = self.auth,
+                            verify = self.cert,
+                            headers = self.headers)
+        else:
+            return requests.request(command, url,
+                                    data = data,
+                                    auth = self.auth,
+                                    verify = self.cert,
+                                    headers = self.headers)
+
+    def save(self, body:dict, xid:str=None, seq_primary:tuple=None,
+             xdate:int=None, refresh=None, mode:str=None):
+        """
+        Index an item
+        Adds to the data body self.terms to save the data of the terms fields
+        
+        Parameters:
+            body: body of the REST request
+            xid: ID of the item to save data to
+            seq_primary: tuple (if_seq_no, if_primary_term) for cuncurrency control
+            xdate: date value used to determine the index (for time spanned indexes)
+            refresh: see description fro request method
+            mode: see description fro request method
+        
+        Returns:
+            id of the created item or None on failure
+        """
+        if self.terms:
+            for key, val in self.terms.items():
+                body[key] = val
+        endpoint = '_doc/'
+        if xid:
+            endpoint += xid
+
+        resp = self.request(endpoint=endpoint, seq_primary=seq_primary,
+                            refresh=refresh, body=body,
+                            xdate=xdate,  mode=mode)
+        if resp.status_code != 201: # resource created
+            logger = logging.getLogger(__name__)
+            logger.error(resp.text, stack_info=True)
+            return None
+        return resp.json()['_id']
+        
+# =============================================================================
+#       Retrieve data
+# =============================================================================
+    def get_data(self, xid, mode=None):
+        """
+        Retrieve data for <xid> from the current index
+        
+        Returns the item data (_source) or None if item with id <xid> not found
+        """
+        resp = self.get_data_x(xid, mode)
+        return resp.get('_source') if resp else None
+
+    def get_data_x(self, xid, mode=None):
+        """
+        Retrieve data for <xid> from the current index
+        
+        Returns the full json (_source and metadata) or None if item with id <xid> not found
+        """
+        endpoint = '/'.join(('_doc', xid))
+        resp = self.request(command='GET', endpoint=endpoint, mode=mode)
+        if resp.status_code != 200:
+            logger = logging.getLogger(__name__)
+            logger.error(resp.text, stack_info=True)
+            return None
+        return resp.json()
+
+    def count_index(self, body=None, mode=None):
+        """
+        Counts the items in index_key according to the criteria in body
+        Adds self.terms filter if set
+        """
+        resp = self.request(endpoint="_count", body=self._addFilter(body),
+                            mode=mode)
+        if resp.status_code == 200:
+            return resp.json()['count']
+        else:
+            logger = logging.getLogger(__name__)
+            logger.error(resp.text, stack_info=True)
+            return 0
+
+    def query_index(self, body=None, mode=None):
+        """
+        Returns list of requested rows and total count of matching rows
+        If no results - returns empty list and 0
+        When error returns empty list and the error type (string)
+        Adds self.terms filter if set
+        """
+        resp = self.request(endpoint="_search", body=self._addFilter(body),
+                            mode=mode)
+        if resp.status_code == 200:
+            hits = resp.json()['hits']
+            return hits['hits'], hits['total']['value']
+        if resp.status_code == 404:
+            # Index not found
+            pass
+        else:
+            logger = logging.getLogger(__name__)
+            logger.error(resp.text, stack_info=True)
+        return [], 0
+
+    def agg_index(self, body:dict, mode:str=None) -> Optional[list]:
+        """
+        Returns list of returned rows of aggregated values and count of documents in smaller groups
+        Adds self.terms filter if set
+        """
+        resp = self.request(endpoint="_search", body=self._addFilter(body),
+                            mode=mode)
+        if resp.status_code == 200:
+            # If no data returned response dictionary has no <aggregations> item
+            return  resp.json().get('aggregations', [])
+        if resp.status_code == 404:
+            # Index not found
+            return []
+        # request failed
+        logger = logging.getLogger(__name__)
+        logger.error(resp.text, stack_info=True)
+        return None
+
+    def query_buckets(self, field: str, query: Dict[str, Any] =None,
+                     max_buckets : int =None, quiet: bool =False, mode=None
+                     ) -> Tuple[Dict[str, int], int]:
+        """
+        Retrieves the buckets data on <field>.
+        
+        Returns a dictionary of form key: doc count, and the number of other
+        documents (not aggregated)
+        
+        If quiet==False logs sum_other_doc_count
+        """
+        mbuckets = max_buckets if max_buckets else self.max_buckets
+        body = {"size": 0,
+                "aggs": {"agg": {"terms": {"field": field, "size": mbuckets}}}}
+        if query:
+            body['query'] = query
+        aggs = self.agg_index(body, mode)
+        #print(body, index_key, aggs)
+        if aggs:
+            buckets = aggs['agg']['buckets']
+            others = aggs['agg'].get('sum_other_doc_count',0)
+        else:
+            return {}, 0
+        if others > 0 and not quiet:
+            logger = logging.getLogger(__name__)
+            logger.info(f"{others} items not aggregated: "
+                         f"{field} {self.index_key} {mbuckets}")
+        xbuckets = {x['key']: x['doc_count'] for x in buckets}
+        return xbuckets, others     
+
+    def query_cardinality(self, field: str) -> int:
+        """
+        Retrieve the number of unique values of <field> (cardniality)
+        Adds self.terms filter if set
+        """
+        body = {"size": 0,
+          "aggs": {
+            "agg": {
+              "cardinality": {
+                "field": field
+        }}}}
+        resp = self.request(endpoint='_search', body=self._addFilter(body))
+        assert resp.status_code == 200, resp.text
+        
+        return resp.json()["aggregations"]["agg"]["value"]
+
+    def create_term_filter(self, terms:dict):
+        """
+        Creates terms filter ([{"term": {<field>: <value>}}, ...]) from the
+        <terms> dictionary
+        """
+        return [{"term": {key, val}} for key, val in terms]
+
+    def _addFilter(self, body:dict=None, mode:str=None):
+        """
+        If self.terms set creates new filter merging body/query and self.terms
+
+        Uses a copy of the body parameter to avoid changing the parameter value
+
+        Otherwise just returns body
+        """
+        assert any((body is None, isinstance(body, dict))), 'body must be a dict'
+        if not self.terms:
+            return {} if body is None else body
+
+        xbody = {} if body is None else copy.deepcopy(body)
+        xfilter = self.create_term_filter(self.terms)
+        query = xbody.get('query')
+        if not query:
+            # If body has no query set query to the terms filter
+            xbody['query'] = xfilter
+        elif query and 'bool' in query:
+            # the body query is a bool query
+            if 'filter' not in query['bool']:
+                xbody['query']['bool']['filter'] = []
+            xbody['query']['bool']['filter'].append(xfilter)
+        else:
+            # body query is a simple query, transform to bool query
+            # Assumed that a simple query should be converted to must query
+            xbody['query'] = {'bool': {
+                'filter': [xfilter],
+                'must': [query]
+            }}
+        return xbody
+
+    def term_vectors(self, xid:str, xfield:str, mode=None):
+        """
+        Retrieves term vector data for the item <id>
+        """
+        endpoint = '/'.join(('_termvectors', xid))
+        body = {"fields": [xfield],
+                "offsets": False,
+                "payloads": False,
+                "positions": False,
+                "term_statistics": True,
+                "field_statistics": False,
+                "filter": {
+                    "max_num_terms": 10,
+                    "min_term_freq": 1,
+                    "min_doc_freq": 2
+                  }
+        }
+        resp = self.request(body=body, endpoint=endpoint, mode=mode)        
+        if resp.status_code != 200:
+            logger = logging.getLogger(__name__)
+            logger.info(f"status {resp.status_code} error {resp.text}")
+            return None
+        resp = resp.json()
+        return resp['term_vectors'][xfield]['terms']
+        
+    def mlt(self, xids:list, mlt_conf:dict, mode=None)-> dict:
+        """
+        Retrieves more-like-this query for <xids> and configuration <mlt_conf>
+        """
+        pars = {"fields": mlt_conf['fields'], "like": [{"_id": x} for x in xids]}
+        for field in ('min_term_freq', 'max_query_terms', 'min_doc_freq',
+                      'max_doc_freq', 'min_word_length', 'max_word_length'):
+            val = mlt_conf.get(field)
+            if val is not None:
+                pars[field] = val
+        if mode:
+            logger = logging.getLogger(__name__)
+            logger.info(f"more-like-this {pars}")
+        return {"more_like_this": pars}
+
+# =============================================================================
+#       Handling indexes
+# =============================================================================
+    def get_indexes(self):
+        """
+        Return a list of existing index names for the index key
+        """
+        resp = self.request(command='GET', endpoint='_settings')
+        if resp.status_code == 404:
+            return []   # Mo indexes found, return empty list
+        return list(resp.json().keys())
+
+    def delete_indexes(self, indexes, mode=None):
+        """
+        Deletes indexes of the list <indexes>
+        Returns True if all indexes deleted succesfully
+        """
+        success = True
+        for index in indexes:
+            # set index name directly to handle indexes with time spans -
+            # here indexes have to be deleted one by one
+            resp = self.request(command="DELETE", endpoint=index,
+                                use_index_key=False, mode=mode)
+            if not resp.json().get('acknowledged'):
+                logger = logging.getLogger(__name__)
+                logger.error(resp.text)
+                success = False
+        return success
+            
+    def exists_index(self, mode=None):
+        """
+        Returns True if index exists, false otherwise
+        """
+        index_name = self.index_name()
+        endpoint = f"_cat/indices/{index_name}?h=s,idx&format=json"
+        resp = self.request(mode=mode,
+            command='GET', endpoint=endpoint, use_index_key=False)
+        status = resp.status_code
+        assert status in (200, 404), f"exists_index returned status {resp.text}"
+        return (status == 200)
+
+    def set_refresh(self, period:str='1s', mode:str=None) -> bool:
+        """
+        Sets refresh interval for the index xkey to period.
+        Period has form 'xxxs' where xxx is number of seconds
+        """
+        body = {"index": {"refresh_interval": period}}
+        resp = self.request(command='PUT', endpoint='_settings', body=body,
+                            mode=mode)
+        ok = True
+        if resp.status_code != 200:
+            ok = False
+            logger = logging.getLogger(__name__)
+            logger.info(f"Status {resp.status_code} _settings " 
+                        f"{body}\n {resp.text}")
+        return ok
+
+# =============================================================================
+#       Handling spans
+# =============================================================================
+    def index_name(self, epoch: int = None) -> Optional[str]:
         """
         Get index name for the stub, source and epoch.
 
@@ -198,7 +610,7 @@ class xelastic():
                 return None
         return '-'.join((self.prefix, self.stub, self.source, span))
 
-    def start(self, span: str) -> Optional[int]:
+    def span_start(self, span: str) -> Optional[int]:
         """
         Returns the start epoch of the span
         """
@@ -216,7 +628,7 @@ class xelastic():
         else:
             return None
 
-    def end(self, span: str) -> Optional[int]:
+    def span_end(self, span: str) -> Optional[int]:
         """
         Returns the end epoch of the span
         """
@@ -243,350 +655,36 @@ class xelastic():
         """
         return (xyear, xmonth + 1) if xmonth < 12 else (xyear + 1, 1)
 
-    def _make_params(self, url:str, params:dict)->str:
-        """
-        Makes parameter string of form ?par1&par2 ...
-        """
-        return '?'.join((url, urllib.parse.urlencode(params)))
-
-    def request(self, command='POST', endpoint='', seq_primary=None, refresh=None,
-                body:dict=None, xdate=None, use_index_key=True, mode=None):
-        """
-        Wrapper on _request_json. Converts dictionary <body> to json string
-        
-        NB!! Does not use self.terms
-        """
-        data = json.dumps(body) if body else None
-        return self._request_json(command, endpoint, seq_primary, refresh, data,
-                                  xdate, use_index_key, mode)
-
-    def _request_json(self, command='POST', endpoint=None, seq_primary=None,
-                      refresh=None, body=None, xdate=None, use_index_key=True,
-                      mode=None):
-        """
-        Wrapper to the requests method request. Body is a json string. 
-        In most cases called from request method. Directly used e.g. for bulk
-        indexing.
-        
-        If use_index_key set to False, does not use index name for es request
-        
-        Values for refresh:
-            not set or False - no refresh actions
-            wait for - waits for the refresh to proceed
-            empty string or true (not recommended) - immedially refreh the
-                relevant index shards
-
-        Values for mode: 
-            None (run) to run silently
-            f (fake) to log parameters without running the request
-            v (or any other value - verbose) to run and log data
-        Mode might be set by the methods parameter or by the instance variable
-        If both set parameter has a precedence.
-        
-        Returns requests object resp:
-           status_code - http status code
-           text - returned result as a json or text
-           json() - converting the returned result to python list, use
-              only for the requests returning json, do not use for _cat
-        """
-        if not mode: mode = self.mode
-        url = self.es_client
-        if self.index_key and use_index_key:
-            url += self.indexName(xdate) + '/'
-        if endpoint:
-            url += endpoint
-        params = {}
-        if seq_primary:
-            params['if_seq_no'] = seq_primary[0]
-            params['if_primary_term'] = seq_primary[1]
-        if refresh:
-            params['refresh'] = refresh
-        if params: # Add url parameters if specified
-            #req = requests.get(url, params=params)
-            #url = req.url
-            url = self._make_params(url, params)
-
-        if mode:
-            logger = logging.getLogger(__name__)
-            logger.info(f"command {command}, index_key {self.index_key}"
-                        f" url {url} body {body}")
-        if mode == 'f':
-            # execute dummy request
-            return requests.request('GET', self.es_client,
-                            auth = self.auth,
-                            verify = self.cert,
-                            headers = self.headers)
-        else:
-            return requests.request(command, url,
-                                    data = body,
-                                    auth = self.auth,
-                                    verify = self.cert,
-                                    headers = self.headers)
-
-    def getIndexes(self):
-        """
-        Return a list of existing index names for the index key
-        """
-        resp = self.request(command='GET', endpoint='_settings')
-        if resp.status_code == 404:
-            return []   # Mo indexes found, return empty list
-        return list(resp.json().keys())
-
-    def deleteIndexes(self, indexes, mode=None):
-        """
-        Deletes indexes of the list <indexes>
-        Returns True if all indexes deleted succesfully
-        """
-        success = True
-        for index in indexes:
-            # set index name directly to handle indexes with time spans -
-            # here indexes have to be deleted one by one
-            resp = self.request(command="DELETE", endpoint=index,
-                                use_index_key=False, mode=mode)
-            if not resp.json().get('acknowledged'):
-                logger = logging.getLogger(__name__)
-                logger.error(resp.text)
-                success = False
-        return success
-            
-    def getData(self, xid, mode=None):
-        """
-        Retrieve data for <xid> from the current index
-        
-        Returns the item data (_source) or None if item with id <xid> not found
-        """
-        resp = self.getDataX(xid, mode)
-        return resp.get('_source') if resp else None
-
-    def getDataX(self, xid, mode=None):
-        """
-        Retrieve data for <xid> from the current index
-        
-        Returns the full json (_source and metadata) or None if item with id <xid> not found
-        """
-        endpoint = '/'.join(('_doc', xid))
-        resp = self.request(command='GET', endpoint=endpoint, mode=mode)
-        if resp.status_code != 200:
-            logger = logging.getLogger(__name__)
-            logger.error(resp.text, stack_info=True)
-            return None
-        return resp.json()
-
-    def save(self, body, xid=None, seq_primary=None, refresh=None, xdate=None, mode=None):
-        """
-        Index an item
-        Adds to the data body self.terms to save the data of the terms fields
-        
-        Returns id of the created item or None on failure
-        """
-        if self.terms:
-            for key, val in self.terms.items():
-                body[key] = val
-        endpoint = '_doc/'
-        if xid:
-            endpoint += xid
-
-        resp = self.request(endpoint=endpoint, seq_primary=seq_primary,
-                            refresh=refresh, body=body,
-                            xdate=xdate,  mode=mode)
-        if resp.status_code != 201: # resource created
-            logger = logging.getLogger(__name__)
-            logger.error(resp.text, stack_info=True)
-            return None
-        return resp.json()['_id']
-        
-    def existsIndex(self, mode=None):
-        """
-        Returns True if index exists, false otherwise
-        """
-        index_name = self.indexName()
-        endpoint = f"_cat/indices/{index_name}?h=s,idx&format=json"
-        resp = self.request(mode=mode,
-            command='GET', endpoint=endpoint, use_index_key=False)
-        status = resp.status_code
-        assert status in (200, 404), f"existsIndex returned status {resp.text}"
-        return (status == 200)
-
-    def countIndex(self, body=None, mode=None):
-        """
-        Counts the items in index_key according to the criteria in body
-        Adds self.terms filter if set
-        """
-        resp = self.request(endpoint="_count", body=self._addFilter(body),
-                            mode=mode)
-        if resp.status_code == 200:
-            return resp.json()['count']
-        else:
-            logger = logging.getLogger(__name__)
-            logger.error(resp.text, stack_info=True)
-            return 0
-
-    def queryIndex(self, body=None, mode=None):
-        """
-        Returns list of requested rows and total count of matching rows
-        If no results - returns empty list and 0
-        When error returns empty list and the error type (string)
-        Adds self.terms filter if set
-        """
-        resp = self.request(endpoint="_search", body=self._addFilter(body),
-                            mode=mode)
-        if resp.status_code == 200:
-            hits = resp.json()['hits']
-            return hits['hits'], hits['total']['value']
-        if resp.status_code == 404:
-            # Index not found
-            pass
-        else:
-            logger = logging.getLogger(__name__)
-            logger.error(resp.text, stack_info=True)
-        return [], 0
-
-    def aggIndex(self, body:dict, mode:str=None) -> Optional[list]:
-        """
-        Returns list of returned rows of aggregated values and count of documents in smaller groups
-        Adds self.terms filter if set
-        """
-        resp = self.request(endpoint="_search", body=self._addFilter(body),
-                            mode=mode)
-        if resp.status_code == 200:
-            # If no data returned response dictionary has no <aggregations> item
-            return  resp.json().get('aggregations', [])
-        if resp.status_code == 404:
-            # Index not found
-            return []
-        # request failed
-        logger = logging.getLogger(__name__)
-        logger.error(resp.text, stack_info=True)
-        return None
-
-    def queryBuckets(self, field: str, query: Dict[str, Any] =None,
-                     max_buckets : int =None, quiet: bool =False, mode=None
-                     ) -> Tuple[Dict[str, int], int]:
-        """
-        Retrieves the buckets data on <field>.
-        
-        Returns a dictionary of form key: doc count, and the number of other
-        documents (not aggregated)
-        
-        If quiet==False logs sum_other_doc_count
-        """
-        mbuckets = max_buckets if max_buckets else self.max_buckets
-        body = {"size": 0,
-                "aggs": {"agg": {"terms": {"field": field, "size": mbuckets}}}}
-        if query:
-            body['query'] = query
-        aggs = self.aggIndex(body, mode)
-        #print(body, index_key, aggs)
-        if aggs:
-            buckets = aggs['agg']['buckets']
-            others = aggs['agg'].get('sum_other_doc_count',0)
-        else:
-            return {}, 0
-        if others > 0 and not quiet:
-            logger = logging.getLogger(__name__)
-            logger.info(f"{others} items not aggregated: "
-                         f"{field} {self.index_key} {mbuckets}")
-        xbuckets = {x['key']: x['doc_count'] for x in buckets}
-        return xbuckets, others     
-
-    def queryCardinality(self, field: str) -> int:
-        """
-        Retrieve the number of unique values of <field> (cardniality)
-        Adds self.terms filter if set
-        """
-        body = {"size": 0,
-          "aggs": {
-            "agg": {
-              "cardinality": {
-                "field": field
-        }}}}
-        resp = self.request(endpoint='_search', body=self._addFilter(body))
-        assert resp.status_code == 200, resp.text
-        
-        return resp.json()["aggregations"]["agg"]["value"]
-
-    def setRefresh(self, period='1s', mode=None):
-        """
-        Sets refresh interval for the index xkey to period.
-        Period has form 'xxxs' where xxx is number of seconds
-        """
-        body = {"index": {"refresh_interval": period}}
-        resp = self.request(command='PUT', endpoint='_settings', body=body,
-                            mode=mode)
-        ok = True
-        if resp.status_code != 200:
-            ok = False
-            logger = logging.getLogger(__name__)
-            logger.info(f"Status {resp.status_code} _settings " 
-                        f"{body}\n {resp.text}")
-        return ok
-
-    def createTermFilter(self, terms:dict):
-        """
-        Creates terms filter ([{"term": {<field>: <value>}}, ...]) from the
-        <terms> dictionary
-        """
-        return [{"term": {key, val}} for key, val in terms]
-
-    def _addFilter(self, body:dict=None, mode:str=None):
-        """
-        If self.terms set creates new filter merging body/query and self.terms
-
-        Uses a copy of the body parameter to avoid changing the parameter value
-
-        Otherwise just returns body
-        """
-        assert any((body is None, isinstance(body, dict))), 'body must be a dict'
-        if not self.terms:
-            return {} if body is None else body
-
-        xbody = {} if body is None else copy.deepcopy(body)
-        xfilter = self.createTermFilter(self.terms)
-        query = xbody.get('query')
-        if not query:
-            # If body has no query set query to the terms filter
-            xbody['query'] = xfilter
-        elif query and 'bool' in query:
-            # the body query is a bool query
-            if 'filter' not in query['bool']:
-                xbody['query']['bool']['filter'] = []
-            xbody['query']['bool']['filter'].append(xfilter)
-        else:
-            # body query is a simple query, transform to bool query
-            # Assumed that a simple query should be converted to must query
-            xbody['query'] = {'bool': {
-                'filter': [xfilter],
-                'must': [query]
-            }}
-        return xbody
-
-    def setUpdBody(self, name: str, upd_fields: list = None, del_fields: list = None, mode=None):
+# =============================================================================
+#       Update API
+# =============================================================================
+    def set_upd_body(self, name: str, upd_fields: list = None, del_fields: list = None, mode=None):
         """
         Create and save in upd_bodies the update dictionary. Uses _updFields to
         create script source.
         
-        Parameters:
-            name - name of th update script
-            upd_fields - fields to update
-            del_fields - fields to remove
-            mode not used
+        Parameters.
+            name: name of the update script
+            upd_fields: fields to update
+            del_fields: fields to remove
+            mode: not used
         """
         self.upd_bodies[name] = {"script": {
                 "source": self._updFields(upd_fields, del_fields),
                 "lang": "painless"}}
 
-    def updateFields(self, name: str, xfilter: dict, values: dict=None,
+    def update_fields(self, name: str, xfilter: dict, values: dict=None,
                      xdate=None, refresh=None, mode=None):
         """
         Update / delete fields for items filtered by xfilter (update by query)
         If update body <name> has update fields, <values> must be specified
 
-        Parameters:
-            name - name of the update body (created by setUpdBody)
-            xfilter - query to select items for update
-            values - a dictionary of field names and values, names must match
-                what is set in setUpdBody
-            xdate - value of the main date field of the item to update; used 
+        Parameters.
+            name: name of the update body (created by set_upd_body)
+            xfilter: query to select items for update
+            values: a dictionary of field names and values, names must match
+                what is set in set_upd_body
+            xdate: value of the main date field of the item to update; used 
                     to identify the index the item is saved in
             refresh:
                 - not set or False - no refresh actions
@@ -612,7 +710,7 @@ class xelastic():
                         f"{refresh} {body}\n {resp.text}")
             return -1
         rj = resp.json()
-        if rj.get('tagline'): # updateFields executed in fake mode 'f'
+        if rj.get('tagline'): # update_fields executed in fake mode 'f'
             return 1 # pretend everything is ok
 
         updated = rj.get('updated', 0)
@@ -623,7 +721,7 @@ class xelastic():
         else:
             return updated
 
-    def updateFieldsById(self, name: str, xid: str, values: dict=None,
+    def update_fields_by_id(self, name: str, xid: str, values: dict=None,
                      xdate=None, seq_primary=None, refresh=None, mode=None):
         """
         Update fields for item with ident <xid>
@@ -696,7 +794,7 @@ class xelastic():
         """
         Retrieves the total count of rows matching the scroll request
         """
-        return self.countIndex(self.body, mode=mode)
+        return self.count_index(self.body, mode=mode)
 
     def _scroll_next_batch(self, resp, mode=None):
         """
@@ -757,7 +855,6 @@ class xelastic():
         self.request(command='DELETE', endpoint='/_search/scroll',
                      body=body, mode=mode)
         
-        
 # =============================================================================
 #       Bulk API
 # =============================================================================
@@ -769,17 +866,16 @@ class xelastic():
         refresh is transfered to the request method. Possible values - None
         
         Sets the refresh interval if specified in <refresh_interval>
-        
-        Mode not used in this call
         """
-        self.bulk_refresh = refresh
+        self.mode = mode # Setmode for use in calls of the current bulk
+        self.bulk_refresh = refresh # Set refresh after the latest bulk flush
         if refresh_interval:
-            self.setRefresh(period=refresh_interval)
+            self.set_refresh(period=refresh_interval)
         if bulk_max:
             self.bulk_max = bulk_max
-        self.__bulk_clear()
+        self._bulk_clear()
 
-    def __bulk_clear(self):
+    def _bulk_clear(self):
         """
         Clears the bulk buffer, resets the bulk item counter and error flag
         """
@@ -793,15 +889,16 @@ class xelastic():
         """
         assert self.bulkcurr is not None, "Bulk indexing not initialized! Execute bulk_set()"
         assert self.bulkcurr <= self.bulk_max, "bulk counter overflow"
+        if mode is None: mode = self.mode
         if self.bulkcurr == self.bulk_max:
-            self.__bulk_flush(mode=mode)
+            self._bulk_flush(mode=mode)
 
         if not action:
             action = 'index' # Set index action if not specified
         # If span type is not n (date_field set) transfer the item date
         # as it is used to create the index name
         xdate = None if not self.date_field else item[self.date_field]
-        bulk_action = self.__bulk_create_action(action=action, xid=xid, xdate=xdate)
+        bulk_action = self._bulk_create_action(action=action, xid=xid, xdate=xdate)
 
         bulk_item = f"{bulk_action}\n{json.dumps(item)}\n"
         # input(bulk_item)
@@ -812,37 +909,38 @@ class xelastic():
         """
         Flushes the last batch to the index and sets refresh interval to 1 second
         
-        Returns True if no errors in flush and setRefresh
+        Returns True if no errors in flush and set_refresh
         """
-        self.__bulk_flush(mode=mode)
+        self._bulk_flush(mode=mode, refresh=self.bulk_refresh)
         self.bulkcurr = None # indicates that bulk indexing is not initialized
-        resp = self.setRefresh(period='1s')
+        resp = self.set_refresh(period='1s')
 
         return all((not self.bulkerror, resp))
 
-    def __bulk_flush(self, mode=None):
+    def _bulk_flush(self, refresh=None, mode=None):
         """
         Flushes to the index and clears the bulk
         Sets the error flag if flush failed
         """
+        if mode is None: mode = self.mode
         if self.bulkcurr==0:
             return # nothing to flush
-        resp = self._request_json(endpoint='_bulk', refresh=self.bulk_refresh,
-                                  body=self.bulk, mode=mode)
+        resp = self._request_json(endpoint='_bulk', refresh=refresh,
+                                  data=self.bulk, mode=mode)
         logger = logging.getLogger(__name__)
         if resp.status_code != 200:
             self.bulkerror = True
             logger.info(f"status {resp.status_code} error {resp.text}")
         elif resp.json().get('errors'):
             logger.info(f"error {resp.text}")
-        self.__bulk_clear()
+        self._bulk_clear()
 
-    def __bulk_create_action(self, action, xid=None, xdate=None):
+    def _bulk_create_action(self, action, xid=None, xdate=None):
         """
         Returns basic bulk action for bulk indexing
         Handles differences between ES versions prior to 7 (demands _type) and 7 (does not allow _type)
         """
-        index_name = self.indexName(epoch=xdate)
+        index_name = self.index_name(epoch=xdate)
         xaction = {"_index": index_name}
         if self.es_version < 7:
             xaction["_type"] = "_doc"
@@ -851,47 +949,7 @@ class xelastic():
         return json.dumps({action: xaction})
     
 ###############################################################################
-    def termvectors(self, xid:str, xfield:str, mode=None):
-        """
-        Retrieves term vector data for the item <id>
-        """
-        endpoint = '/'.join(('_termvectors', xid))
-        body = {"fields": [xfield],
-                "offsets": False,
-                "payloads": False,
-                "positions": False,
-                "term_statistics": True,
-                "field_statistics": False,
-                "filter": {
-                    "max_num_terms": 10,
-                    "min_term_freq": 1,
-                    "min_doc_freq": 2
-                  }
-        }
-        resp = self.request(body=body, endpoint=endpoint, mode=mode)        
-        if resp.status_code != 200:
-            logger = logging.getLogger(__name__)
-            logger.info(f"status {resp.status_code} error {resp.text}")
-            return None
-        resp = resp.json()
-        return resp['term_vectors'][xfield]['terms']
-        
-    def mlt(self, xids:list, mlt_conf:dict, mode=None)-> dict:
-        """
-        Retrieves more-like-this query for <xids> and configuration <mlt_conf>
-        """
-        pars = {"fields": mlt_conf['fields'], "like": [{"_id": x} for x in xids]}
-        for field in ('min_term_freq', 'max_query_terms', 'min_doc_freq',
-                      'max_doc_freq', 'min_word_length', 'max_word_length'):
-            val = mlt_conf.get(field)
-            if val is not None:
-                pars[field] = val
-        if mode:
-            logger = logging.getLogger(__name__)
-            logger.info(f"more-like-this {pars}")
-        return {"more_like_this": pars}
 
-# =============================================================================
     def __str__(self):
         return f"client={self.es_client}, source={self.source}"
 
