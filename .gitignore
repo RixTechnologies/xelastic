@@ -1,0 +1,8 @@
+.DS_Store
+.env
+*.pyc
+*.pyo
+env*
+build/
+.spyproject
+__pycache__
