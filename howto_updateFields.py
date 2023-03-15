@@ -8,7 +8,7 @@ See sample_bulk for additional information
 @author: juris.rats
 """
 import time
-from xelastic import xelastic
+from src.xelastic import XElastic
 
 conf = {
     'connection': {
@@ -21,7 +21,7 @@ conf = {
 }
 
 
-xes = xelastic(conf, 'customers') # Create xelastic instance for customers index
+xes = XElastic(conf, 'customers') # Create xelastic instance for customers index
 xes.set_upd_body('update1', upd_fields=['phone', 'email'])
 xes.set_upd_body('update2', upd_fields=['phone'], del_fields=['email'])
 print(xes.upd_bodies)

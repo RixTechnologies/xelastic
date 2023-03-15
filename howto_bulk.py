@@ -39,7 +39,10 @@ Created on Thu Mar  9 14:14:41 2023
 @author: juris.rats
 """
 import time, logging
-from xelastic import xelastic
+#import sys
+#sys.path.append("C:\\Users\\juris.rats\\AppData\\Local\\miniconda3\\Lib\\site-packages")
+
+from src.xelastic import XElastic
 
 logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO,
     format= "%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
@@ -50,6 +53,7 @@ conf = {
         'local': {'client': 'http://localhost:9200/'}},
     'prefix': 'ta',
     'source': 'src',
+    'timeout': 10,
     'indexes': {
         'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
    }
@@ -60,7 +64,7 @@ items = [
     {"name": "Doris", "email": "doris@xelastic.com", "phone": "414156781"}
     ]
 
-es_to = xelastic(conf, 'customers') # Create xelastic instance for customers index
+es_to = XElastic(conf, 'customers') # Create xelastic instance for customers index
 
 es_to.bulk_set(refresh='wait_for') # Initialize the bulk indexing
 
