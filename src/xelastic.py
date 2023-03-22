@@ -130,20 +130,21 @@ class XElastic():
                 f"Wrong index key {index_key}"
 
 
-        # Handle index configuration
-        index_conf = esconf['indexes'][self.index_key]
-        span_type = index_conf.get('span_type', 'n')
-        self.span_conf = {
-            'prefix': esconf['prefix'],
-            'span_type': span_type,
-            'date_field': index_conf.get('date_field'),
-            'stub': index_conf['stub']
-            }
-
-        assert span_type in ('n','y','q','m','d'),\
-            f"Wrong index span type {span_type}"
-        assert any((span_type == 'n', self.span_conf['date_field'])), \
-            f"Date field must be set for index of span type {span_type}"
+        # Handle index configuration is index_key specified
+        if self.index_key:
+            index_conf = esconf['indexes'][self.index_key]
+            span_type = index_conf.get('span_type', 'n')
+            self.span_conf = {
+                'prefix': esconf['prefix'],
+                'span_type': span_type,
+                'date_field': index_conf.get('date_field'),
+                'stub': index_conf['stub']
+                }
+    
+            assert span_type in ('n','y','q','m','d'),\
+                f"Wrong index span type {span_type}"
+            assert any((span_type == 'n', self.span_conf['date_field'])), \
+                f"Date field must be set for index of span type {span_type}"
 
         # Retrieving specified connection and environment keys
         ckey = esconf['connection']['current']
@@ -162,7 +163,6 @@ class XElastic():
         # Retrieve the Elasticsearch version
         resp = self.request('GET', use_index_key=False, mode=mode).json()
         self.es_version = int(resp['version']['number'].split('.')[0])
-        self.es_doc = '/_doc/' if self.es_version < 7 else '/'
 
         self._usage_ok(esconf.get('high', 90), mode=mode) # Aborts if disk usage too high
         self.set_source(self.source)
