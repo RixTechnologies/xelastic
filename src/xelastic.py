@@ -5,7 +5,7 @@ Created on Wed Apr 14 10:56:39 2021
     Elasticsearch interface class. Provides easy handling of scroll and bulk
     requests as well as handling of time split indexes.
 
-    External methods
+    External methods XElastic
         set_source
         request
         save
@@ -18,28 +18,24 @@ Created on Wed Apr 14 10:56:39 2021
         query_buckets
         query_cardinality
         create_term_filter
-        term_vectors
         mlt
         ========== Handling indexes
         get_indexes
         delete_indexes
-        exists_index
         set_refresh
         ========== Handling spans
         index_name
         span_start
         span_end
-        ========== Update API
+    External methods XElasticUpdate
         set_upd_body
         update_fields
         update_fields_by_id
-        ========== Scroll API
-        scroll_set
+    External nethods XElasticScroll
         scroll_total
         scroll
         scroll_close
-        ========== Bulk API
-        bulk_set
+    External nethods XElasticBulk
         bulk_index
         bulk_close
         ==========
@@ -98,7 +94,7 @@ import urllib
 import time
 from datetime import datetime, timedelta
 # Union, Set, List, Tuple, Collection, Any, Dict, Optional, NoReturn
-from typing import Tuple, Any, Dict, Optional
+from typing import Tuple, Any, Dict, Optional, Union, List
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -171,25 +167,6 @@ class XElastic():
         self._usage_ok(esconf.get('high', 90), mode=mode) # Aborts if disk usage too high
         self.set_source(self.source)
 
-        # Configuration for the scroll API
-        keep = esconf.get('keep', '10s')
-        self.scroll_conf:Dict[str, Any] = {
-            'body': None,  # None signals that the scroll is not initialized
-            'keep': keep,
-            'scroll_size': esconf.get('scroll_size', 100),
-            'endpoint_first': f"_search?scroll={keep}",
-            'endpoint_next': "_search/scroll"}
-
-        # Configuration for the bulk API
-        self.bulk_conf:Dict[str, Any] = {
-            'max': esconf.get('index_bulk', 1000),
-            'main_mode': self.mode,  # saved to restore mode when close bulk
-            'curr': None  # indicates that bulk indexing is not initialized
-            }
-
-        self.upd_bodies: Dict[str, Dict[str, Any]] = {} # placeholder for update scripts
-
-
     def _usage_ok(self, high:int, mode:Optional[str]=None):
         """
         Aborts if disk usage is more as configuration es/high value
@@ -207,7 +184,11 @@ class XElastic():
 
     def _mode(self, mode:str) ->str:
         """
-        Returns mode if not None, otherwise - self.mode
+        Parameters:
+            mode: the mode parameter
+
+        Returns:
+            mode if not None, otherwise - self.mode
         """
         return mode if mode else self.mode
 
@@ -220,7 +201,7 @@ class XElastic():
         """
         self.source = source
 
-    def _make_params(self, url:str, params:dict)->str:
+    def _make_params(self, url:str, params:Dict[str, Any]) ->str:
         """
         Makes parameter string of form ?par1&par2 ... and appends it to the url
         
@@ -228,12 +209,15 @@ class XElastic():
             url: the url to append parameters to
             params: parameter dictionary (parameter name: value)
         
-        Returns: url with parameter string appended
+        Returns:
+            url with parameter string appended
         """
         return '?'.join((url, urllib.parse.urlencode(params)))
 
-    def request(self, command:str='POST', endpoint:str='', seq_primary:tuple=None,
-                refresh=None, body:dict=None, xdate:int=None, use_index_key:bool=True,
+    def request(self, command:str='POST', endpoint:str='',
+                seq_primary:Tuple[int, int]=None,
+                refresh:Union[str, bool, None]=None, body:Dict[str, Any]=None,
+                xdate:int=None, use_index_key:bool=True,
                 mode:Optional[str]=None) ->requests.Response:
         """
         Wrapper on _request_json. Converts dictionary <body> to json string
@@ -241,7 +225,7 @@ class XElastic():
         Parameters:
             command: REST command
             endpoint: endpoint of the REST request
-            seq_primary: tuple (if_seq_no, if_primary_term) for cuncurrency control
+            seq_primary: tuple (if_seq_no, if_primary_term) for concurrency control
             refresh: 
                 - not set or False: no refresh actions
                 - wait_for: waits for the refresh to proceed
@@ -268,9 +252,9 @@ class XElastic():
                                   xdate, use_index_key, mode)
 
     def _request_json(self, command:str='POST', endpoint:str='',
-            seq_primary:tuple=None, refresh:Optional[str]=None, data:str=None,
-            xdate:int=None, use_index_key:bool=True, mode:Optional[str]=None
-            ) ->requests.Response:
+            seq_primary:Tuple[int, int]=None, refresh:Union[str, bool, None]=None,
+            data:str=None, xdate:int=None, use_index_key:bool=True,
+            mode:Optional[str]=None) ->requests.Response:
         """
         Wrapper to the requests method request.
         In most cases called from request method. Directly used e.g. for bulk
@@ -279,12 +263,6 @@ class XElastic():
         See descriptions of the request method for details. The only difference
         is the parameter 'data' which is a 'body' dictionary of the request 
         method converted to json string
-        
-        Returns requests.Response object resp:
-           status_code - http status code
-           text - returned result as a json or text
-           json() - converting the returned result to python list, use
-              only for the requests returning json, do not use for _cat
         """
         mode = self._mode(mode)
         url = self.es_client
@@ -305,28 +283,16 @@ class XElastic():
 
         if mode:
             logger = logging.getLogger(__name__)
-            logger.info("command %s, index_key %s url %s body %s",
-                        command, self.index_key, url, data)
-            # logger.info(f"command {command}, index_key {self.index_key}"
-            #             f" url {url} body {data}")
+            logger.info(f"command {command}, index_key {self.index_key}"
+                        f" url {url} body {data}")
         if mode == 'f':
             # execute dummy request
             return requests.request('GET', self.es_client, **self.request_conf)
         return requests.request(command, url, data = data, **self.request_conf)
-        #     return requests.request('GET', self.es_client,
-        #                     auth = self.auth,
-        #                     timeout = self.timeout,
-        #                     verify = self.cert,
-        #                     headers = self.headers)
-        # return requests.request(command, url,
-        #                     data = data,
-        #                     auth = self.auth,
-        #                     timeout = self.timeout,
-        #                     verify = self.cert,
-        #                     headers = self.headers)
 
-    def save(self, body:dict, xid:str=None, seq_primary:tuple=None,
-             xdate:int=None, refresh=None, mode:str=None):
+    def save(self, body:dict, xid:str=None, seq_primary:Tuple[int, int]=None,
+             xdate:int=None, refresh:Union[str, bool, None]=None, mode:str=None
+             ) ->str:
         """
         Index an item
         Adds to the data body self.terms to save the data of the terms fields
@@ -361,20 +327,33 @@ class XElastic():
 # =============================================================================
 #       Retrieve data
 # =============================================================================
-    def get_data(self, xid, mode:Optional[str]=None) ->Optional[Dict[str, Any]]:
+    def get_data(self, xid:str, mode:Optional[str]=None
+                 ) ->Optional[Dict[str, Any]]:
         """
         Retrieve data for <xid> from the current index
         
-        Returns the item data (_source) or None if item with id <xid> not found
+        Parameters:
+            xid: item id to retrieve the data from
+            mode: mode parameter
+        
+        Returns:
+            the item data (_source) or None if item with id <xid> not found
         """
         resp = self.get_data_x(xid, self._mode(mode))
         return resp.get('_source') if resp else None
 
-    def get_data_x(self, xid, mode:Optional[str]=None) ->Optional[Dict[str, Any]]:
+    def get_data_x(self, xid:str, mode:Optional[str]=None
+                   ) ->Optional[Dict[str, Any]]:
         """
         Retrieve data for <xid> from the current index
         
-        Returns the full json (_source and metadata) or None if item with id <xid> not found
+        Parameters:
+            xid: item id to retrieve the data from
+            mode: mode parameter
+
+        Returns:
+            the full json (_source and metadata) or None if item with
+                id <xid> not found
         """
         endpoint = '/'.join(('_doc', xid))
         resp = self.request(command='GET', endpoint=endpoint, mode=self._mode(mode))
@@ -384,10 +363,18 @@ class XElastic():
             return None
         return resp.json()
 
-    def count_index(self, body=None, mode:Optional[str]=None) ->int:
+    def count_index(self, body:Dict[str, Any]=None, mode:Optional[str]=None
+                    ) ->int:
         """
         Counts the items in index_key according to the criteria in body
         Adds self.terms filter if set
+
+        Parameters:
+            body: query body to filter items for counting
+            mode: mode parameter
+
+        Returns:
+            item count for the given filter
         """
         resp = self.request(endpoint="_count", body=self._add_filter(body),
                             mode=self._mode(mode))
@@ -398,9 +385,18 @@ class XElastic():
         logger.error(resp.text, stack_info=True)
         return 0
 
-    def query_index(self, body=None, mode:Optional[str]=None):
+    def query_index(self, body:Dict[str, Any]=None, mode:Optional[str]=None
+                    ) -> Tuple[Dict[str, Any], int]:
         """
-        Returns list of requested rows and total count of matching rows
+        Returns adictionary of requested rows and total count of matching rows
+        
+        Parameters:
+            body: query body
+            mode: mode parameter
+
+        Returns:
+            a list of query results and a number of matching items
+
         If no results - returns empty list and 0
         When error returns empty list and the error type (string)
         Adds self.terms filter if set
@@ -418,9 +414,38 @@ class XElastic():
             logger.error(resp.text, stack_info=True)
         return [], 0
 
-    def agg_index(self, body:dict, mode:Optional[str]=None) -> Optional[list]:
+    def get_ids(self, body:Dict[str, Any]=None, mode:Optional[str]=None
+                    ) -> List[str]:
         """
-        Returns list of returned rows of aggregated values and count of documents in smaller groups
+        Returns list of ids of documents mathcing the query <body>
+        
+        Parameters:
+            body: query body
+            mode: mode parameter
+
+        Returns:
+            a list of ids
+
+        If no results - returns empty list
+        """
+        # Ensure _source fields are not included in the returned results
+        body['_source'] = False
+        hits, _ = self.query_index(body, mode=self._mode(mode))
+        return [hit['_id'] for  hit in hits]
+
+    def agg_index(self, body:Dict[str, Any], mode:Optional[str]=None
+                  ) -> Optional[list]:
+        """
+        Executes the aggregate request specfied by the body parameter.
+        
+        Parameters:
+            body: a body of the aggregate request
+            mode: the mode parameter
+
+        Returns:
+            the aggregations dictionary returned by Elasticsearch
+                aggregation request
+
         Adds self.terms filter if set
         """
         resp = self.request(endpoint="_search", body=self._add_filter(body),
@@ -436,16 +461,24 @@ class XElastic():
         logger.error(resp.text, stack_info=True)
         return None
 
-    def query_buckets(self, field: str, query: Dict[str, Any] =None,
-                     max_buckets : int =None, quiet: bool =False,
-                     mode:Optional[str]=None) -> Tuple[Dict[str, int], int]:
+    def query_buckets(self, field:str, query:Dict[str, Any]=None,
+                     max_buckets:int=None, quiet:bool=False,
+                     mode:Optional[str]=None) ->Tuple[Dict[str, int], int]:
         """
         Retrieves the buckets data on <field>.
-        
-        Returns a dictionary of form key: doc count, and the number of other
-        documents (not aggregated)
-        
-        If quiet==False logs sum_other_doc_count
+
+        Parameters:
+            field: the field name to get buckets for
+            query: a query dictionary used to filter the items to aggregate
+            max_buckets: max number if buckets to retrieve; set to
+                self.max_buckets if not specified in the parameter
+            quiet: if True log the case when there are more than max_buckets
+                buckets available
+            mode: the mode parameter
+
+        Returns:
+            a dictionary of form key: doc count, and the number of not
+                aggregated documents
         """
         mbuckets = max_buckets if max_buckets else self.max_buckets
         body = {"size": 0,
@@ -468,7 +501,15 @@ class XElastic():
 
     def query_cardinality(self, field: str, mode:Optional[str]=None) -> int:
         """
-        Retrieve the number of unique values of <field> (cardniality)
+        Retrieve the number of unique values of <field> (cardinality)
+
+        Parameters:
+            field: the field name to get cardinality for
+            mode: the mode parameter
+
+        Returns:
+            The cardinality of the specified field
+
         Adds self.terms filter if set
         """
         body = {"size": 0,
@@ -487,17 +528,30 @@ class XElastic():
         """
         Creates terms filter ([{"term": {<field>: <value>}}, ...]) from the
         <terms> dictionary
+
+        Parameters:
+            terms: the dictionary of field names and values
+
+        Returns:
+            The list of term filters
         """
         return [{"term": {key, val}} for key, val in terms]
 
-    def _add_filter(self, body:dict=None, mode:Optional[str]=None
+    def _add_filter(self, body:Dict[str, Any]=None, mode:Optional[str]=None
                    ) -> Dict[str, Any]:
         """
-        If self.terms set creates new filter merging body/query and self.terms
+        Adds the terms filters for self.terms to the body filters.
+
+        Parameters:
+            body: the main filter
+            mode: the mode parameter
+
+        Returns:
+            the merged filter
 
         Uses a copy of the body parameter to avoid changing the parameter value
 
-        Otherwise just returns body
+        If self.terms not set just returns body
         """
         assert any((body is None, isinstance(body, dict))), 'body must be a dict'
         if not self.terms:
@@ -527,36 +581,17 @@ class XElastic():
 
         return xbody
 
-    def term_vectors(self, xid:str, xfield:str, mode:Optional[str]=None
-                     ) -> Optional[Dict[str, Any]]:
-        """
-        Retrieves term vector data for the item <id>
-        """
-        endpoint = '/'.join(('_termvectors', xid))
-        body = {"fields": [xfield],
-                "offsets": False,
-                "payloads": False,
-                "positions": False,
-                "term_statistics": True,
-                "field_statistics": False,
-                "filter": {
-                    "max_num_terms": 10,
-                    "min_term_freq": 1,
-                    "min_doc_freq": 2
-                  }
-        }
-        resp = self.request(body=body, endpoint=endpoint, mode=self._mode(mode))
-        if resp.status_code != 200:
-            logger = logging.getLogger(__name__)
-            logger.info(f"status {resp.status_code} error {resp.text}")
-            return None
-        resp = resp.json()
-        return resp['term_vectors'][xfield]['terms']
-
-    def mlt(self, xids:list, mlt_conf:dict, mode:Optional[str]=None
+    def mlt(self, xids:list, mlt_conf:Dict[str, Any], mode:Optional[str]=None
             )-> Dict[str, Any]:
         """
         Retrieves more-like-this query for <xids> and configuration <mlt_conf>
+
+        Parameters:
+            mlt_conf: configuration dictionary for Elasticsearch mlt query
+            mode: the mode parameter
+
+        Returns:
+            more_like_this dictionary ready for usr in mlt query           
         """
         pars = {"fields": mlt_conf['fields'], "like": [{"_id": x} for x in xids]}
         for field in ('min_term_freq', 'max_query_terms', 'min_doc_freq',
@@ -581,10 +616,16 @@ class XElastic():
             return []   # Mo indexes found, return empty list
         return list(resp.json().keys())
 
-    def delete_indexes(self, indexes, mode:Optional[str]=None) ->bool:
+    def delete_indexes(self, indexes:list, mode:Optional[str]=None) ->bool:
         """
         Deletes indexes of the list <indexes>
-        Returns True if all indexes deleted succesfully
+
+        Parameters:
+            indexes: a list of index names to delete indexes for
+            mode: the mode parameter
+
+        Returns:
+            True if all indexes deleted succesfully
         """
         success = True
         for index in indexes:
@@ -598,21 +639,17 @@ class XElastic():
                 success = False
         return success
 
-    def exists_index(self, mode:Optional[str]=None) ->bool:
-        """
-        Returns True if index exists, false otherwise
-        """
-        index_name = self.index_name()
-        endpoint = f"_cat/indices/{index_name}?h=s,idx&format=json"
-        resp = self.request(mode=self._mode(mode),
-            command='GET', endpoint=endpoint, use_index_key=False)
-        status = resp.status_code
-        assert status in (200, 404), f"exists_index returned status {resp.text}"
-        return status == 200
-
     def set_refresh(self, period:str='1s', mode:Optional[str]=None) -> bool:
         """
-        Sets refresh interval for the index xkey to period.
+        Sets refresh interval for the current index of key index_key
+
+        Parameters:
+            period: refresh period to set
+            mode: the mode parameter
+
+        Returns:
+            True if the period is set, False otherwise
+
         Period has form 'xxxs' where xxx is number of seconds
         """
         body = {"index": {"refresh_interval": period}}
@@ -629,9 +666,15 @@ class XElastic():
 # =============================================================================
 #       Handling spans
 # =============================================================================
-    def index_name(self, epoch:int=None) -> Optional[str]:
+    def index_name(self, epoch:int=None) ->Optional[str]:
         """
         Get index name for the stub, source and epoch.
+
+        Parameters:
+            epoch: time as epoch or None to specify all time spans
+
+        Returns:
+            Index name for current time span and index_key
 
         If span_type == 'n' SPAN_ALL is used as span in the index name
         Otherwise
@@ -661,7 +704,12 @@ class XElastic():
 
     def span_start(self, span: str) -> Optional[int]:
         """
-        Returns the start epoch of the span
+        Parameters:
+            span: The span part of the index name, forma depends on span_type
+                'yyyy' (y), 'yyyy-mm' (m or q), 'yyyy-mm-dd' (d)
+
+        Returns:
+            The start time of the span (epoch)
         """
         span_type = self.span_conf['span_type']
         if span_type=='y':
@@ -680,7 +728,12 @@ class XElastic():
 
     def span_end(self, span: str) -> Optional[int]:
         """
-        Returns the end epoch of the span
+        Parameters:
+            span: The span part of the index name, forma depends on span_type
+                'yyyy' (y), 'yyyy-mm' (m or q), 'yyyy-mm-dd' (d)
+
+        Returns:
+            The end time of the span (epoch)
         """
         span_type = self.span_conf['span_type']
         if span_type=='y':
@@ -702,13 +755,50 @@ class XElastic():
 
     def _next_month(self, xyear: int, xmonth: int) -> Tuple[int, int]:
         """
-        Returns year and month for the next month
+        Parameters:
+            xyear: year (number)
+            xmonth: month (number)
+
+        Returns:
+            year and month number for the next month relative to xyear
+                and xmonth
         """
         return (xyear, xmonth + 1) if xmonth < 12 else (xyear + 1, 1)
+
+###############################################################################
+
+    def __str__(self):
+        return f"client={self.es_client}, source={self.source}"
+
+    def __repr__(self):
+        return "{self.__class__.__name__}({self.es_client},{self.es_version})"
+
 
 # =============================================================================
 #       Update API
 # =============================================================================
+class XElasticUpdate(XElastic):
+    """
+    Adding scroll methods to the XElastic
+    """
+
+    def __init__(self, esconf: Dict[str, Any], index_key:Optional[str]=None,
+                 terms:Optional[Dict[str, Any]]=None,
+                 mode:Optional[str]=None):
+        """
+        Initializes the instance. See details in the parent method
+
+        Parameters:
+            esconf: configuration dictionary for the Elasticsearch connection
+            index_key: the index key for the instance
+            terms: terms dictionary of form {key1: value1, key2: value2, ...}
+            body: query body to filter the items for scrolling
+            mode: may set mode for all requests for the current class instance
+        """
+        super().__init__(esconf, index_key, terms, mode)
+
+        self.upd_bodies: Dict[str, Dict[str, Any]] = {} # placeholder for update scripts
+
     def set_upd_body(self, name: str, upd_fields: list = None,
                      del_fields: list = None):
         """
@@ -725,7 +815,8 @@ class XElastic():
                 "lang": "painless"}}
 
     def update_fields(self, name: str, xfilter: dict, values: dict=None,
-                     xdate=None, refresh=None, mode:Optional[str]=None) ->int:
+                     xdate=None, refresh:Union[str, bool, None]=None,
+                     mode:Optional[str]=None) ->int:
         """
         Update / delete fields for items filtered by xfilter (update by query)
         If update body <name> has update fields, <values> must be specified
@@ -742,11 +833,13 @@ class XElastic():
                 - wait for - waits for the refresh to proceed
                 - empty string or true (not recommended) - immedially refreh the
                       relevant index shards
+            mode: the mode parameter
 
-        Returns number of updated items if updates successful, -1 otherwise
+        Returns:
+            number of updated items if updates successful, -1 otherwise
+
         Logs errors on failure
         {"took": ?, "timed_out": false, "total": ?, "updated": ?, ...}
-
         """
         body = self.upd_bodies[name]
         body['query'] = xfilter
@@ -773,21 +866,37 @@ class XElastic():
         return updated
 
     def update_fields_by_id(self, name: str, xid: str, values:Dict[str, Any]=None,
-                     xdate=None, seq_primary:tuple=None, refresh:Optional[str]=None,
-                     mode:Optional[str]=None) ->Optional[Dict[str, Any]]:
+            xdate:int=None, seq_primary:tuple=None, refresh:Optional[str]=None,
+            mode:Optional[str]=None) ->Optional[Dict[str, Any]]:
         """
         Update fields for item with ident <xid>
+        
+        Parameters:
+            name: name of the update body (created by set_upd_body)
+            xid:id of the item to update
+            values: a dictionary of field names and values, names must match
+                what is set in set_upd_body
+            xdate: value of the main date field of the item to update; used 
+                    to identify the index the item is saved in
+            refresh:
+                - not set or False - no refresh actions
+                - wait for - waits for the refresh to proceed
+                - empty string or true (not recommended) - immedially refreh the
+                      relevant index shards
+            mode: the mode parameter
+
+        Returns:
+            the update response
+
+        update response has form
+            {'_index': ?, '_type': '_doc', '_id': ?, '_version': ?,
+            'result': 'updated', '_shards': {'total': ?, 'successful': ?, 'failed': ?},
+            '_seq_no': ?, '_primary_term': ?}
+            or None on failure        
         
         If <seq_primary> is specified as a tuple (item_seq, primary_term),
         updates only if the _item_seq and _primary_term of the item
         matches ones specified
-        
-        Returns the update response in form
-        {'_index': ?, '_type': '_doc', '_id': ?, '_version': ?, 'result': 'updated',
-         '_shards': {'total': ?, 'successful': ?, 'failed': ?},
-         '_seq_no': ?, '_primary_term': ?}
-        
-        or None on failure
         """
         assert any((self.span_conf['span_type']=='n', xdate)), \
             "xdate must be specified for all span types except 'n'"
@@ -813,6 +922,9 @@ class XElastic():
         Parameters:
           upd_fields - list of the names of fields to update
           del_fields - list of the names of fields to delete
+
+        Returns:
+            update script
         """
         upd_script =  [] if not upd_fields else \
             [f"ctx._source.{field}=params['{field}']" for field in upd_fields]
@@ -820,37 +932,66 @@ class XElastic():
             [f"ctx._source.remove('{field}')" for field in del_fields]
         return ';'.join(upd_script+del_script)
 
+
 # =============================================================================
 #       Scroll API
 # =============================================================================
-    def scroll_set(self, body=None, mode:Optional[str]=None):
+class XElasticScroll(XElastic):
+    """
+    Adding scroll methods to the XElastic
+    """
+
+    def __init__(self, esconf: Dict[str, Any], index_key:Optional[str]=None,
+                 terms:Optional[Dict[str, Any]]=None,
+                 body:Optional[Dict[str, Any]]=None,
+                 mode:Optional[str]=None):
         """
-        Initializes a new scroll. Scroll is set no matter of mode value.
-        
-        Batch ends when scroll returns None
+        Initializes the instance. See details in the parent method
+
+        Parameters:
+            esconf: configuration dictionary for the Elasticsearch connection
+            index_key: the index key for the instance
+            terms: terms dictionary of form {key1: value1, key2: value2, ...}
+            body: query body to filter the items for scrolling
+            mode: may set mode for all requests for the current class instance
         """
+        super().__init__(esconf, index_key, terms, mode)
+
         scroll_body = self._add_filter(body)
         if 'size' not in scroll_body:
-            scroll_body['size'] = self.scroll_conf['scroll_size']
+            scroll_body['size'] = esconf.get('scroll_size', 100)
 
-        # body is a (possibly empty) dictionary when the scroll is initialized,
-        # None if not inialized
-        self.scroll_conf['body'] = scroll_body
-        self.scroll_conf['id'] = None # Identifies the first scroll batch
-
-        if self._mode(mode):
-            logger = logging.getLogger(__name__)
-            logger.info(self.scroll_conf)
+        # Configuration for the scroll API
+        keep = esconf.get('keep', '10s')
+        self.scroll_conf:Dict[str, Any] = {
+            'id': None,  # Identifies the first scroll batch
+            'body': scroll_body,
+            'keep': keep,
+            'endpoint_first': f"_search?scroll={keep}",
+            'endpoint_next': "_search/scroll"}
 
     def scroll_total(self, mode:Optional[str]=None) ->int:
         """
         Retrieves the total count of rows matching the scroll request
+
+        Parameters:
+            mode: the mode parameter
+
+        Returns:
+            The total number of items matching the scroll request
         """
         return self.count_index(self.scroll_conf['body'], mode=self._mode(mode))
 
     def _scroll_next_batch(self, resp:requests.Response) ->bool:
         """
         Handles the next scroll batch from <resp> and sets the instance variables
+
+        Parameters:
+            resp: the response of the request
+            mode: the mode parameter
+
+        Returns:
+            True on success, False otherwise
         """
         if resp.status_code == 200:
             jresp = resp.json()
@@ -873,13 +1014,15 @@ class XElastic():
 
     def scroll(self, mode:Optional[str]=None) ->Optional[Dict[str, Any]]:
         """
-        Returns the next item from the scroll buffer (the item of ES hits list).
+        Parameters:
+            mode: the mode parameter
+
+        Returns:
+            the next item from the scroll buffer (the item of ES hits list).
         
-        If the process is not initialized yet executes the first scroll request
+        If the process is not started yet executes the first scroll request
         If the buffer is empty, retrieves the next batch of items
         """
-        assert self.scroll_conf.get('body'), \
-            'Scroll not initialized, execute scroll_set'
         mode = self._mode(mode)
         if not self.scroll_conf.get('buffer'):
             # Buffer is empty, get new batch of data
@@ -903,31 +1046,55 @@ class XElastic():
     def scroll_close(self, mode:Optional[str]=None) ->None:
         """
         Removes the scroll buffer.
+
+        Parameters:
+            mode: the mode parameter
         """
         body = {"scroll_id" : self.scroll_conf['id']}
         del self.scroll_conf['body']
         self.request(command='DELETE', endpoint='/_search/scroll',
                      body=body, mode=self._mode(mode))
 
+
 # =============================================================================
 #       Bulk API
 # =============================================================================
-    def bulk_set(self, refresh=None, refresh_interval=None, bulk_max=None,
-                 mode:Optional[str]=None):
+class XElasticBulk(XElastic):
+    """
+    Adding bulk indexing methods to the XElastic
+    """
+    def __init__(self, esconf: Dict[str, Any], index_key:str=None,
+                 terms:Optional[Dict[str, Any]]=None,
+                 refresh:Union[str, bool, None]=None, refresh_interval:str=None,
+                 bulk_max:int=None, mode:Optional[str]=None):
         """
-        Initializes a bulk index
-        If included in the call bulk_max overrides one set on class initialization
-        
-        refresh is transfered to the request method. Possible values - None
-        
-        Sets the refresh interval if specified in <refresh_interval>
+        Initializes the instance. See details in the parent method
+
+        Parameters:
+            esconf: configuration dictionary for the Elasticsearch connection
+            index_key: the index key for the instance
+            terms: terms dictionary of form {key1: value1, key2: value2, ...}
+            refresh: refresh type for the bulk requests
+            refresh_interval: refresh interval to set for the bulk requests
+            bulk_max: max items in the bulk buffer, overrides the one set in
+                esconf
+            mode: may set mode for all requests for the current class instance
         """
-        self.bulk_conf['refresh'] = refresh
-        if bulk_max:
-            self.bulk_conf['max'] = bulk_max
+        super().__init__(esconf, index_key, terms, mode)
+
         self.mode = self._mode(mode) # Setmode for use in calls of the current bulk
+
         if refresh_interval:
             self.set_refresh(period=refresh_interval)
+
+        # Configuration for the bulk API
+        xmax = bulk_max if bulk_max else esconf.get('index_bulk', 1000)
+
+        self.bulk_conf:Dict[str, Any] = {
+            'max': xmax,
+            'main_mode': self.mode,  # saved to restore mode when close bulk
+            'refresh': refresh
+            }
         self._bulk_clear()
 
     def _bulk_clear(self):
@@ -944,10 +1111,11 @@ class XElastic():
         Adds the item data to the bulk. If bulk full flush it
         
         Parameters:
-            item: 
+            item: the dictionary of data to add to the bulk idexing buffer
+            action: indexing action [index or update], defaults to index
+            xid: id of the item to index, if None id is generated by ES
+            mode: the mode parameter
         """
-        assert self.bulk_conf.get('curr') is not None, \
-            "Bulk indexing not initialized! Execute bulk_set()"
         assert self.bulk_conf['curr'] <= self.bulk_conf['max'], \
             "bulk counter overflow"
 
@@ -971,7 +1139,11 @@ class XElastic():
         """
         Flushes the last batch to the index and sets refresh interval to 1 second
         
-        Returns True if no errors in flush and set_refresh
+        Parameters:
+            mode: the mode parameter
+
+        Returns:
+            True if no errors in flush and set_refresh
         """
         self._bulk_flush(mode=self._mode(mode), refresh=self.bulk_conf['refresh'])
         # Resets the main mode of the class instance
@@ -982,10 +1154,15 @@ class XElastic():
 
         return all((not self.bulk_conf['error'], resp))
 
-    def _bulk_flush(self, refresh:Optional[str]=None, mode:Optional[str]=None):
+    def _bulk_flush(self, refresh:Union[str, bool, None]=None,
+                    mode:Optional[str]=None):
         """
         Flushes to the index and clears the bulk
         Sets the error flag if flush failed
+
+        Parameters:
+            refresh: index refresh type (None, wait_for or True)
+            mode: the mode parameter
         """
         if self.bulk_conf['curr'] == 0:
             return # nothing to flush
@@ -1001,7 +1178,14 @@ class XElastic():
 
     def _bulk_create_action(self, action:str, xid:str=None, xdate:int=None):
         """
-        Returns basic bulk action for bulk indexing
+        Parameters:
+            action: indexing action (index or update)
+            xid: id of the item to index, if None id is generated by ES
+            mode: the mode parameter
+
+        Returns:
+            A basic bulk action for bulk indexing
+
         Handles differences between ES versions prior to 7 (demands _type) and
         7 (does not allow _type)
         """
@@ -1012,11 +1196,3 @@ class XElastic():
         if xid:
             xaction["_id"] = xid
         return json.dumps({action: xaction})
-
-###############################################################################
-
-    def __str__(self):
-        return f"client={self.es_client}, source={self.source}"
-
-    def __repr__(self):
-        return "{self.__class__.__name__}({self.es_client},{self.es_version})"

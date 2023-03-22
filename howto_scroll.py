@@ -7,7 +7,7 @@ Created on Thu Mar  9 15:26:41 2023
 
 @author: juris.rats
 """
-from src.xelastic import XElastic
+from src.xelastic import XElasticScroll
 
 conf = {
     'connection': {
@@ -19,8 +19,7 @@ conf = {
         'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
    }
 
-es_from = XElastic(conf, 'customers') # Create xelastic instance for customers index
-es_from.scroll_set() # Initialize the scroll requests
+es_from = XElasticScroll(conf, 'customers') # Create xelastic instance for customers index
 # Retrieve an item from the scroll batch. Retrieve next batch if the current one
 # is empty
 while item := es_from.scroll():

@@ -42,7 +42,7 @@ import time, logging
 #import sys
 #sys.path.append("C:\\Users\\juris.rats\\AppData\\Local\\miniconda3\\Lib\\site-packages")
 
-from src.xelastic import XElastic
+from src.xelastic import XElasticBulk
 
 logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO,
     format= "%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
@@ -64,9 +64,8 @@ items = [
     {"name": "Doris", "email": "doris@xelastic.com", "phone": "414156781"}
     ]
 
-es_to = XElastic(conf, 'customers') # Create xelastic instance for customers index
-
-es_to.bulk_set(refresh='wait_for') # Initialize the bulk indexing
+# Create xelastic instance for bulk indexing of the customers index
+es_to = XElasticBulk(conf, 'customers', refresh='wait_for')
 
 for item in items:
     item['updated'] = int(time.time()) # Set updated to the current timestamp

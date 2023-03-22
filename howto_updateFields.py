@@ -8,7 +8,7 @@ See sample_bulk for additional information
 @author: juris.rats
 """
 import time
-from src.xelastic import XElastic
+from src.xelastic import XElasticUpdate
 
 conf = {
     'connection': {
@@ -21,7 +21,7 @@ conf = {
 }
 
 
-xes = XElastic(conf, 'customers') # Create xelastic instance for customers index
+xes = XElasticUpdate(conf, 'customers') # Create xelastic instance for customers index
 xes.set_upd_body('update1', upd_fields=['phone', 'email'])
 xes.set_upd_body('update2', upd_fields=['phone'], del_fields=['email'])
 print(xes.upd_bodies)
@@ -32,8 +32,7 @@ xes.update_fields('update1', xfilter={'term': {'name': 'Jane'}},
                values = {'phone': '4242424242', 'email': 'Jane_new@xelastic.com'})
 
 # update fields by item id
-hits, _ = xes.query_index(body={"query": {"term": {"name": "John"}}})
-xid = hits[0]["_id"] # retrieve the item id
+xid = xes.get_ids(body={"query": {"term": {"name": "John"}}})[0]
 
 # must specify xdate to identify the time span (and index) the item to update is located
 xes.update_fields_by_id('update2', xid=xid, xdate=int(time.time()),
