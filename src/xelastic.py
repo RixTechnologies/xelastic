@@ -437,7 +437,7 @@ class XElasticIndex(XElastic):
         If no results - returns empty list
         """
         # Ensure _source fields are not included in the returned results
-        if not body:
+        if body is None:
             body = {}
         body['_source'] = False
         hits, _ = self.query_index(body, mode=self._mode(mode))
@@ -988,6 +988,7 @@ class XElasticScroll(XElasticIndex):
         keep = esconf.get('keep', '10s')
         self.scroll_conf:Dict[str, Any] = {
             'id': None,  # Identifies the first scroll batch
+            'buffer': None,
             'body': scroll_body,
             'keep': keep,
             'endpoint_first': f"_search?scroll={keep}",
@@ -1073,7 +1074,7 @@ class XElasticScroll(XElasticIndex):
             mode: the mode parameter
         """
         body = {"scroll_id" : self.scroll_conf['id']}
-        del self.scroll_conf['body']
+        self.scroll_conf['buffer'] = None
         self.request(command='DELETE', endpoint='/_search/scroll',
                      body=body, mode=self._mode(mode))
 

@@ -131,7 +131,7 @@ def test_xelastic():
     ###########################################################################
     ids = es.get_ids()
     assert len(ids) == 3, f"Step 6. Must be 3 ids, retrieved {len(ids)}"
-    assert set(ids) == {1, 2, 3}, f"Step 6. Wrong ids - {ids}"
+    assert set(ids) == {'1', '2', '3'}, f"Step 6. Wrong ids - {ids}"
 
     ###########################################################################
     # Step 7. Retrieve the index name
@@ -140,15 +140,13 @@ def test_xelastic():
     assert len(indexes) == 1, f"Step 7. Must be 1 index, retrieved {len(indexes)}"
     local = time.localtime(upd_time)
 
-    gt = '-'.join(('ta', 'cust', 'src', time.strftime("%Y", local),
+    gt = '-'.join(('ta', 'cst', 'src', time.strftime("%Y", local),
                            time.strftime("%m", local)))
     assert indexes[0] == gt, f"Step 7. Wrong index name - {indexes[0]}"
 
     ###########################################################################
     # Step 8. Delete the indexes
     ###########################################################################
-    es = XElastic()
+    es = XElastic(conf)
     res = es.delete_indexes(indexes)
     assert res, 'Step 8. Delete indexes failed'
-    
-    
