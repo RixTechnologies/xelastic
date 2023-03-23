@@ -5,8 +5,8 @@ Created on Tue Mar 14 13:06:58 2023
 @author: juris.rats
 """
 import time, logging
-import sys
-sys.path.append("src")
+#import sys
+# sys.path.append("src")
 
 from xelastic import XElastic, XElasticIndex
 from xelastic import XElasticScroll, XElasticBulk, XElasticUpdate
