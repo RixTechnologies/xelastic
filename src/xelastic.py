@@ -8,7 +8,6 @@ Created on Wed Apr 14 10:56:39 2021
     External methods XElastic
         request
         usage
-        get_indexes
         delete_indexes
     External methods XElasticIndex
         ========== Retrieve data
@@ -25,6 +24,7 @@ Created on Wed Apr 14 10:56:39 2021
         span_start
         span_end
         ========== Other
+        get_indexes
         create_term_filter
         mlt
         set_refresh
@@ -265,15 +265,6 @@ class XElastic():
         """
         return '?'.join((url, urllib.parse.urlencode(params)))
 
-    def get_indexes(self) ->list:
-        """
-        Return a list of existing index names for the index key
-        """
-        resp = self.request(command='GET', endpoint='_settings')
-        if resp.status_code == 404:
-            return []   # Mo indexes found, return empty list
-        return list(resp.json().keys())
-
     def delete_indexes(self, indexes:list, mode:Optional[str]=None) ->bool:
         """
         Deletes indexes of the list <indexes>
@@ -446,6 +437,8 @@ class XElasticIndex(XElastic):
         If no results - returns empty list
         """
         # Ensure _source fields are not included in the returned results
+        if not body:
+            body = {}
         body['_source'] = False
         hits, _ = self.query_index(body, mode=self._mode(mode))
         return [hit['_id'] for  hit in hits]
@@ -690,6 +683,15 @@ class XElasticIndex(XElastic):
 # =============================================================================
 #       Other
 # =============================================================================
+    def get_indexes(self) ->list:
+        """
+        Return a list of existing index names for the index key
+        """
+        resp = self.request(command='GET', endpoint='_settings')
+        if resp.status_code == 404:
+            return []   # Mo indexes found, return empty list
+        return list(resp.json().keys())
+
     def create_term_filter(self, terms:Dict[str, Any]) ->list:
         """
         Creates terms filter ([{"term": {<field>: <value>}}, ...]) from the

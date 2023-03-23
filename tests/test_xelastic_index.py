@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Mar 14 13:06:58 2023
+Created on Thu Mar 23 13:23:44 2023
 
 @author: juris.rats
 """
+
 import sys
 sys.path.append("src")
 
-from xelastic import xelastic
+from xelastic import XElasticIndex
 
 def test_xelastic():
     """
@@ -23,7 +24,7 @@ def test_xelastic():
               'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
         }
 
-    xes = xelastic(conf, "customers")
+    xes = XElasticIndex(conf, "customers")
     tstamp = 1678792737 # timestamp for 2023-03-14
     index_name = xes.index_name(tstamp)
     assert index_name == 'ta-cst-src-2023-03', \

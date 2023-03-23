@@ -2,7 +2,7 @@
 """
 Sample script demonstrating xelastic bulk indexing
 
-Assumed that an index template is created that defines 3 fields:
+Assumed that an index template is created:
     customer
     street_address
     email
