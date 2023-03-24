@@ -336,41 +336,48 @@ class XElasticIndex(XElastic):
 # =============================================================================
 #       Retrieve data
 # =============================================================================
-    def get_data(self, xid:str, mode:Optional[str]=None
+    def get_data(self, xid:str, xdate:int=None, mode:Optional[str]=None
                    ) ->Optional[Dict[str, Any]]:
         """
         Retrieve data for <xid> from the current index
         
         Parameters:
             xid: item id to retrieve the data from
+            xdate: date to identify a span (index) to retrieve the data from
             mode: mode parameter
 
         Returns:
             the full json (_source and metadata) or None if item with
                 id <xid> not found
         """
+        span_type = self.span_conf['span_type']
+        assert any((span_type == 'n', xdate)), \
+            f'Date must be specified for span_type {span_type}'
+
         endpoint = '/'.join(('_doc', xid))
-        resp = self.request(command='GET', endpoint=endpoint, mode=self._mode(mode))
+        resp = self.request(command='GET', endpoint=endpoint, xdate=xdate,
+                            mode=self._mode(mode))
         if resp.status_code != 200:
             logger = logging.getLogger(__name__)
             print_stack = resp.status_code != 404
-            logger.error(resp.text, stack_info=print_stack)
+            logger.error(f"{resp.status_code}: {resp.text}", stack_info=print_stack)
             return None
         return resp.json()
 
-    def get_source_fields(self, xid:str, mode:Optional[str]=None
+    def get_source_fields(self, xid:str, xdate:int=None, mode:Optional[str]=None
                  ) ->Optional[Dict[str, Any]]:
         """
         Retrieve data for <xid> from the current index
         
         Parameters:
             xid: item id to retrieve the data from
+            xdate: date to identify a span (index) to retrieve the data from
             mode: mode parameter
         
         Returns:
             the item data (_source) or None if item with id <xid> not found
         """
-        resp = self.get_data(xid, self._mode(mode))
+        resp = self.get_data(xid, xdate, self._mode(mode))
         return resp.get('_source') if resp else None
 
     def count_index(self, body:Dict[str, Any]=None, mode:Optional[str]=None
@@ -803,6 +810,7 @@ class XElasticIndex(XElastic):
         span_type = self.span_conf['span_type']
         assert any((span_type == 'n', xdate)), \
             f'Date must be specified for span_type {span_type}'
+
         endpoint = '/'.join(('_doc', xid))
         resp = self.request('DELETE', endpoint=endpoint, seq_primary=seq_primary,
                         refresh=refresh, xdate=xdate,  mode=self._mode(mode))
