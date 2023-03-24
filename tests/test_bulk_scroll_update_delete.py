@@ -5,8 +5,8 @@ Created on Tue Mar 14 13:06:58 2023
 @author: juris.rats
 """
 import time, logging
-#import sys
-# sys.path.append("src")
+import sys
+sys.path.append("src")
 
 from xelastic import XElastic, XElasticIndex
 from xelastic import XElasticScroll, XElasticBulk, XElasticUpdate
@@ -50,8 +50,13 @@ def test_xelastic():
         "version": 1
     }
     """
-    logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO,
-        format= "%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
+    logging.basicConfig(handlers=[logging.StreamHandler()],
+            level=logging.info,
+            format="%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
+    # log_name = 'test_bulk_scroll_update_delete_log.txt'
+    # logging.basicConfig(handlers=[logging.FileHandler(log_name)],
+    #         level=logging.info,
+    #         format="%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
     
     conf = {
         'connection': {
@@ -70,6 +75,7 @@ def test_xelastic():
         {"name": "Doris", "email": "doris@xelastic.com", "phone": "414156781"}
         ]
     
+    print(sys.path)
     ###########################################################################
     # Step 1. Index the data with a bulk indexing. This creates 3 items with 
     # ids 1, 2 and 3 respectively.
@@ -137,8 +143,8 @@ def test_xelastic():
     ###########################################################################
     # Step 7. Delete an item
     ###########################################################################
-    resp = es.delete(xid='3', refresh='wait_for')
-    assert not resp, 'Item deletion failed, see log'
+    resp = es.delete_item(xid='3', xdate=int(time.time()), refresh='wait_for')
+    assert resp, 'Item deletion failed, see log'
     count = es.count_index()
     assert count == 2, f"Step 7. Must be 2 records, counted {count}"
 

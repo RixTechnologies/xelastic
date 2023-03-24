@@ -29,7 +29,7 @@ Created on Wed Apr 14 10:56:39 2021
         mlt
         set_refresh
         save
-        delete
+        delete_item
     External methods XElasticUpdate
         set_upd_body
         update_fields
@@ -787,7 +787,7 @@ class XElasticIndex(XElastic):
             return None
         return resp.json()['_id']
 
-    def delete(self, xid:str, seq_primary:Tuple[int, int]=None, xdate:int=None,
+    def delete_item(self, xid:str, seq_primary:Tuple[int, int]=None, xdate:int=None,
                refresh:Union[str, bool, None]=None, mode:str=None) ->bool:
         """
         Deletes the item specified by xid from the index
