@@ -29,6 +29,7 @@ Created on Wed Apr 14 10:56:39 2021
         mlt
         set_refresh
         save
+        delete
     External methods XElasticUpdate
         set_upd_body
         update_fields
@@ -764,8 +765,8 @@ class XElasticIndex(XElastic):
             xid: ID of the item to save data to
             seq_primary: tuple (if_seq_no, if_primary_term) for cuncurrency control
             xdate: date value used to determine the index (for time spanned indexes)
-            refresh: see description fro request method
-            mode: see description fro request method
+            refresh: see description for the request method
+            mode: see description for the request method
         
         Returns:
             id of the created item or None on failure
@@ -780,13 +781,36 @@ class XElasticIndex(XElastic):
         resp = self.request(endpoint=endpoint, seq_primary=seq_primary,
                             refresh=refresh, body=body,
                             xdate=xdate,  mode=self._mode(mode))
-        if resp.status_code != 201: # resource created
+        if resp.status_code != 201: # 201 - resource created
             logger = logging.getLogger(__name__)
             logger.error(resp.text, stack_info=True)
             return None
         return resp.json()['_id']
 
-
+    def delete(self, xid:str, seq_primary:Tuple[int, int]=None, xdate:int=None,
+               refresh:Union[str, bool, None]=None, mode:str=None) ->bool:
+        """
+        Deletes the item specified by xid from the index
+        
+        Parameters:
+            xid: The id of the item to delete
+            seq_primary: tuple (if_seq_no, if_primary_term) for cuncurrency control
+            xdate: date value used to determine the index (for time spanned indexes)
+            refresh: see description for the request method
+            mode: see description for the request method
+        """
+        span_type = self.span_conf['span_type']
+        assert any((span_type == 'n', xdate)), \
+            f'Date must be specified for span_type {span_type}'
+        endpoint = '/'.join(('_doc', xid))
+        resp = self.request('DELETE', endpoint=endpoint, seq_primary=seq_primary,
+                        refresh=refresh, xdate=xdate,  mode=self._mode(mode))
+        if resp.status_code != 200:
+            logger = logging.getLogger(__name__)
+            print_stack = resp.status_code != 404
+            logger.error(resp.text, stack_info=print_stack)
+            return False
+        return True
 
 ###############################################################################
 

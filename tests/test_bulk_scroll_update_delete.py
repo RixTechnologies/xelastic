@@ -20,8 +20,9 @@ def test_xelastic():
         4. Count records
         5. Query the data and check
         6. Retrieve the item ids
-        7. Retrieves the index name
-        8. Delete the index
+        7. Delete an item and check
+        8. Retrieves the index name
+        9. Delete the index
 
     Template to create
     PUT _index_template/template-xelastic
@@ -90,7 +91,8 @@ def test_xelastic():
     ###########################################################################
     es = XElasticScroll(conf, 'customers')
     while item := es.scroll():
-        assert item.get('_source') in items, f"Item {item} not found in entry data"
+        item_source = item.get('_source')
+        assert item_source in items, f"Item {item_source} not found in entry data"
     
     es.scroll_close() # Removes the scroll buffer
 
@@ -124,7 +126,6 @@ def test_xelastic():
     ###########################################################################
     hits, count = es.query_index()
     assert count == 3, f"Step 5. Must be 3 records, counted {count}"
-    items
 
     ###########################################################################
     # Step 6. Retrieve the item ids and check
@@ -134,7 +135,15 @@ def test_xelastic():
     assert set(ids) == {'1', '2', '3'}, f"Step 6. Wrong ids - {ids}"
 
     ###########################################################################
-    # Step 7. Retrieve the index name
+    # Step 7. Delete an item
+    ###########################################################################
+    resp = es.delete(xid='3', refresh='wait_for')
+    assert not resp, 'Item deletion failed, see log'
+    count = es.count_index()
+    assert count == 2, f"Step 7. Must be 2 records, counted {count}"
+
+    ###########################################################################
+    # Step 8. Retrieve the index name
     ###########################################################################
     indexes = es.get_indexes()
     assert len(indexes) == 1, f"Step 7. Must be 1 index, retrieved {len(indexes)}"
@@ -145,7 +154,7 @@ def test_xelastic():
     assert indexes[0] == gt, f"Step 7. Wrong index name - {indexes[0]}"
 
     ###########################################################################
-    # Step 8. Delete the indexes
+    # Step 9. Delete the indexes
     ###########################################################################
     es = XElastic(conf)
     res = es.delete_indexes(indexes)
