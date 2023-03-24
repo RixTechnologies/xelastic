@@ -353,7 +353,8 @@ class XElasticIndex(XElastic):
         resp = self.request(command='GET', endpoint=endpoint, mode=self._mode(mode))
         if resp.status_code != 200:
             logger = logging.getLogger(__name__)
-            logger.error(resp.text, stack_info=True)
+            print_stack = resp.status_code != 404
+            logger.error(resp.text, stack_info=print_stack)
             return None
         return resp.json()
 
