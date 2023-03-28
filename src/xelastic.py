@@ -90,7 +90,6 @@ Created on Wed Apr 14 10:56:39 2021
 @author: juris.rats
 """
 # pylint: disable=logging-fstring-interpolation
-import sys
 import json
 import copy
 import logging
@@ -104,6 +103,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 SPAN_ALL = 'all'        # span name for spantype == 'n'
+SHARED = 'shr'          # source reference for namef of the shared indexes
 
 VERSION_CONFLICT = 'version_conflict_engine_exception'
 
@@ -130,8 +130,6 @@ class XElastic():
         self.mode = mode
         self.index_key = None
 
-        self.source = esconf['source']
-
         # Retrieving specified connection and environment keys
         ckey = esconf['connection']['current']
         usr = esconf['connection'][ckey].get('usr')
@@ -149,8 +147,6 @@ class XElastic():
         # Retrieve the Elasticsearch version
         resp = self.request('GET', mode=mode).json()
         self.es_version = int(resp['version']['number'].split('.')[0])
-
-        # self.set_source(self.source)
 
     def request(self, command:str='POST', endpoint:str='',
                 seq_primary:Tuple[int, int]=None,
@@ -250,15 +246,6 @@ class XElastic():
         """
         return mode if mode else self.mode
 
-    # def set_source(self, source:str):
-    #     """
-    #     Changes the source
-        
-    #     Parameters:
-    #         source: source key
-    #     """
-    #     self.source = source
-
     def _make_params(self, url:str, params:Dict[str, Any]) ->str:
         """
         Makes parameter string of form ?par1&par2 ... and appends it to the url
@@ -294,6 +281,13 @@ class XElastic():
                 logger.error(resp.text)
                 success = False
         return success
+
+    ###########################################
+    def __str__(self):
+        return f"client={self.es_client}"
+
+    def __repr__(self):
+        return "{self.__class__.__name__}({self.es_client},{self.es_version})"
 
 # =============================================================================
 #       Single index API
@@ -331,7 +325,9 @@ class XElasticIndex(XElastic):
             'prefix': esconf['prefix'],
             'span_type': span_type,
             'date_field': index_conf.get('date_field'),
-            'stub': index_conf['stub']
+            'stub': index_conf['stub'],
+            'source': SHARED if index_conf.get('shared', False) \
+                else esconf['source']
             }
 
         assert span_type in ('n','y','q','m','d'),\
@@ -630,7 +626,7 @@ class XElasticIndex(XElastic):
             except KeyError:
                 return None
         return '-'.join((self.span_conf['prefix'], self.span_conf['stub'],
-                         self.source, span))
+                         self.span_conf['source'], span))
 
     def span_start(self, span: str) -> Optional[int]:
         """
@@ -844,11 +840,7 @@ class XElasticIndex(XElastic):
 ###############################################################################
 
     def __str__(self):
-        return f"client={self.es_client}, source={self.source}"
-
-    def __repr__(self):
-        return "{self.__class__.__name__}({self.es_client},{self.es_version})"
-
+        return f"client={self.es_client}, source={self.span_conf['source']}"
 
 # =============================================================================
 #       Update API
