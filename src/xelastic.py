@@ -90,6 +90,7 @@ Created on Wed Apr 14 10:56:39 2021
 @author: juris.rats
 """
 # pylint: disable=logging-fstring-interpolation
+import sys
 import json
 import copy
 import logging
@@ -103,6 +104,11 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 SPAN_ALL = 'all'        # span name for spantype == 'n'
+
+VERSION_CONFLICT = 'version_conflict_engine_exception'
+
+class VersionConflictEngineException(Exception):
+    pass
 
 class XElastic():
     """
@@ -789,11 +795,25 @@ class XElasticIndex(XElastic):
         resp = self.request(endpoint=endpoint, seq_primary=seq_primary,
                             refresh=refresh, body=body,
                             xdate=xdate,  mode=self._mode(mode))
-        if resp.status_code != 201: # 201 - resource created
+        if resp.status_code not in (200, 201): # 201 - resource created
+            err = self._version_conflict(resp.json())
+            if err:
+                raise VersionConflictEngineException(err)
             logger = logging.getLogger(__name__)
-            logger.error(resp.text, stack_info=True)
+            logger.error(resp.text)
+            # logger.error(resp.text, stack_info=True)
             return None
         return resp.json()['_id']
+
+    def _version_conflict(self, resp:Dict[str, Any]) ->bool:
+        """
+        Returns Reason if the response text points to version conflict, None
+        otherwise
+        """
+        err = resp.get('error', {}).get('root_cause', [])
+        err = {} if len(err) < 1 else err[0]
+        return err.get('reason') if err.get('type') == VERSION_CONFLICT \
+            else None
 
     def delete_item(self, xid:str, seq_primary:Tuple[int, int]=None, xdate:int=None,
                refresh:Union[str, bool, None]=None, mode:str=None) ->bool:

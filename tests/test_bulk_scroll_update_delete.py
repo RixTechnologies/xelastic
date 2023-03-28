@@ -11,7 +11,7 @@ sys.path.append("src")
 from xelastic import XElastic, XElasticIndex
 from xelastic import XElasticScroll, XElasticBulk, XElasticUpdate
 
-def test_xelastic():
+def test_bulk_scroll_update_delete():
     """
     Test scenario:
         1. Indexes the data to the customers index (template must be created)
@@ -22,7 +22,8 @@ def test_xelastic():
         6. Retrieve the item ids
         7. Delete an item and check
         8. Retrieves the index name
-        9. Delete the index
+        9. Retrieve the names of the indexes available for the index key
+        10. Delete the index
 
     Template to create
     PUT _index_template/template-xelastic
@@ -76,6 +77,15 @@ def test_xelastic():
         ]
     
     print(sys.path)
+    ###########################################################################
+    # Cleaning
+    ###########################################################################
+    es = XElasticIndex(conf, "customers")
+    indexes = es.get_indexes()
+    es = XElastic(conf)
+    res = es.delete_indexes(indexes)
+    assert res, 'Cleaning failed'
+
     ###########################################################################
     # Step 1. Index the data with a bulk indexing. This creates 3 items with 
     # ids 1, 2 and 3 respectively.
@@ -157,11 +167,17 @@ def test_xelastic():
 
     gt = '-'.join(('ta', 'cst', 'src', time.strftime("%Y", local),
                            time.strftime("%m", local)))
-    assert indexes[0] == gt, f"Step 7. Wrong index name - {indexes[0]}"
+    assert indexes[0] == gt, f"Step 8. Wrong index name - {indexes[0]}"
 
     ###########################################################################
-    # Step 9. Delete the indexes
+    # Step 9. Retrieve the names of the indexes available for the index key
+    ###########################################################################
+    res = es.get_indexes()
+    assert res, 'Step 9. Retrieve index names failed'
+
+    ###########################################################################
+    # Step 10. Delete the indexes
     ###########################################################################
     es = XElastic(conf)
     res = es.delete_indexes(indexes)
-    assert res, 'Step 8. Delete indexes failed'
+    assert res, 'Step 10. Delete indexes failed'
