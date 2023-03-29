@@ -85,7 +85,8 @@ Created on Wed Apr 14 10:56:39 2021
                     defaults to {Content-Type: application/json}
     
 
-    Response codes: 200 (ok), 201 (created succesfully), 400 (bad request), 401 (not authorised)
+    Response codes: 200 (ok), 201 (created succesfully),
+    400 (bad request), 401 (not authorised), 404 (not found)
 
 @author: juris.rats
 """
@@ -106,6 +107,9 @@ SPAN_ALL = 'all'        # span name for spantype == 'n'
 SHARED = 'shr'          # source reference for namef of the shared indexes
 
 VERSION_CONFLICT = 'version_conflict_engine_exception'
+
+class ResourceNotFound(Exception):
+    pass
 
 class VersionConflictEngineException(Exception):
     pass
@@ -149,9 +153,10 @@ class XElastic():
         self.es_version = int(resp['version']['number'].split('.')[0])
 
     def request(self, command:str='POST', endpoint:str='',
-                seq_primary:Tuple[int, int]=None,
+                seq_primary:Tuple[int, int]=None, index_key:bool=True,
                 refresh:Union[str, bool, None]=None, body:Dict[str, Any]=None,
-                xdate:int=None, mode:Optional[str]=None) ->requests.Response:
+                xdate:int=None, mode:Optional[str]=None
+                ) ->Optional[requests.Response]:
         """
         Wrapper on _request_json. Converts dictionary <body> to json string
         
@@ -159,6 +164,7 @@ class XElastic():
             command: REST command
             endpoint: endpoint of the REST request
             seq_primary: tuple (if_seq_no, if_primary_term) for concurrency control
+            index_key: if False do not use index_key
             refresh: 
                 - not set or False: no refresh actions
                 - wait_for: waits for the refresh to proceed
@@ -181,13 +187,16 @@ class XElastic():
         NB!! Does not use self.terms
         """
         data = json.dumps(body) if body else None
-        return self._request_json(command, endpoint, seq_primary, refresh, data,
-                                  xdate, mode)
+        try:
+            return self._request_json(command, endpoint, seq_primary, index_key,
+                                      refresh, data, xdate, mode)
+        except:
+            raise
 
     def _request_json(self, command:str='POST', endpoint:str='',
-            seq_primary:Tuple[int, int]=None, refresh:Union[str, bool, None]=None,
-            data:str=None, xdate:int=None,
-            mode:Optional[str]=None) ->requests.Response:
+            seq_primary:Tuple[int, int]=None, index_key:bool=True,
+            refresh:Union[str, bool, None]=None, data:str=None, xdate:int=None,
+            mode:Optional[str]=None) ->Optional[requests.Response]:
         """
         Wrapper to the requests method request.
         In most cases called from request method. Directly used e.g. for bulk
@@ -197,9 +206,11 @@ class XElastic():
         is the parameter 'data' which is a 'body' dictionary of the request 
         method converted to json string
         """
+        logger = logging.getLogger(__name__)
+
         mode = self._mode(mode)
         url = self.es_client
-        if self.index_key:
+        if all((index_key, self.index_key)):
             url += self.index_name(xdate) + '/'
         if endpoint:
             url += endpoint
@@ -215,13 +226,65 @@ class XElastic():
             url = self._make_params(url, params)
 
         if mode:
-            logger = logging.getLogger(__name__)
             logger.info(f"command {command}, index_key {self.index_key}"
                         f" url {url} body {data}")
         if mode == 'f':
             # execute dummy request
-            return requests.request('GET', self.es_client, **self.request_conf)
-        return requests.request(command, url, data = data, **self.request_conf)
+            resp = requests.request('GET', self.es_client, **self.request_conf)
+        else:
+            try:
+                resp = requests.request(command, url, data = data, **self.request_conf)
+                resp.raise_for_status()
+            except requests.exceptions.HTTPError as err:
+                status_code = err.response.status_code
+                if status_code == 404: # resource not found
+                    return None  # Return nothing
+                if status_code == 409: # version conflict
+                    raise VersionConflictEngineException(err)
+                logger.error(err)
+                raise
+            except requests.exceptions.RequestException as err:
+                logger.error(err)
+        # logger.info(f"{type(resp.status_code)} {self._status_ok(resp.status_code)}")
+        # if not self._status_ok(resp.status_code):
+        #     if resp.status_code == 404:
+        #         raise 
+        #     try:
+        #         jresp = resp.json()
+        #     except json.JSONDecodeError:
+        #         pass
+        #     else:
+        #         err = self._version_conflict(jresp)
+        #         if err:
+        #             raise VersionConflictEngineException(err)
+        #     # Executes if JSOMDecodeError or if no version conflict
+        #     logger.error(resp.text, stack_info=True)
+        #     raise Exception(resp.text)
+
+        return resp
+
+    def _status_ok(self, status:int) ->bool:
+        """
+        Returns True if the status relates to a successful rest api completion.
+        The statuses that start with 2 are considered here as successful ones
+        """
+        return status // 100 == 2
+
+    def _version_conflict(self, resp:Dict[str, Any]) ->bool:
+        """
+        Returns Reason if the response text points to version conflict, None
+        otherwise
+        """
+        err = resp.get('error')
+        if any((err is None, isinstance(err, str))):
+            # root error object does not include error key or the error key
+            # value is a plain text (not dictionary); this cannot be a valid
+            # description of a version conflict
+            return None
+        err = err.get('root_cause', [])
+        err = {} if len(err) < 1 else err[0]
+        return err.get('reason') if err.get('type') == VERSION_CONFLICT \
+            else None
 
     def usage(self, mode:Optional[str]=None):
         """
@@ -270,14 +333,16 @@ class XElastic():
         Returns:
             True if all indexes deleted succesfully
         """
+        logger = logging.getLogger(__name__)
         success = True
         for index in indexes:
             # set index name directly to handle indexes with time spans -
             # here indexes have to be deleted one by one
             resp = self.request(command="DELETE", endpoint=index,
                                 mode=self._mode(mode))
-            if not resp.json().get('acknowledged'):
-                logger = logging.getLogger(__name__)
+            if not resp:
+                logger.warning(f"Index {index} not found when trying to delete")
+            elif not resp.json().get('acknowledged'):
                 logger.error(resp.text)
                 success = False
         return success
@@ -359,12 +424,12 @@ class XElasticIndex(XElastic):
         endpoint = '/'.join(('_doc', xid))
         resp = self.request(command='GET', endpoint=endpoint, xdate=xdate,
                             mode=self._mode(mode))
-        if resp.status_code != 200:
-            logger = logging.getLogger(__name__)
-            print_stack = resp.status_code != 404
-            logger.error(f"{resp.status_code}: {resp.text}", stack_info=print_stack)
-            return None
-        return resp.json()
+        # if resp.status_code != 200:
+        #     logger = logging.getLogger(__name__)
+        #     print_stack = resp.status_code != 404
+        #     logger.error(f"{resp.status_code}: {resp.text}", stack_info=print_stack)
+        #     return None
+        return None if not resp else resp.json()
 
     def get_source_fields(self, xid:str, xdate:int=None, mode:Optional[str]=None
                  ) ->Optional[Dict[str, Any]]:
@@ -397,12 +462,7 @@ class XElasticIndex(XElastic):
         """
         resp = self.request(endpoint="_count", body=self._add_filter(body),
                             mode=self._mode(mode))
-        if resp.status_code == 200:
-            return resp.json()['count']
-
-        logger = logging.getLogger(__name__)
-        logger.error(resp.text, stack_info=True)
-        return 0
+        return resp.json()['count'] if resp else 0
 
     def query_index(self, body:Dict[str, Any]=None, mode:Optional[str]=None
                     ) -> Tuple[Dict[str, Any], int]:
@@ -422,16 +482,11 @@ class XElasticIndex(XElastic):
         """
         resp = self.request(endpoint="_search", body=self._add_filter(body),
                             mode=self._mode(mode))
-        if resp.status_code == 200:
+        if resp:
             hits = resp.json()['hits']
             return hits['hits'], hits['total']['value']
-        if resp.status_code == 404:
-            # Index not found
-            pass
         else:
-            logger = logging.getLogger(__name__)
-            logger.error(resp.text, stack_info=True)
-        return [], 0
+            return [], 0
 
     def get_ids(self, body:Dict[str, Any]=None, mode:Optional[str]=None
                     ) -> List[str]:
@@ -471,16 +526,7 @@ class XElasticIndex(XElastic):
         """
         resp = self.request(endpoint="_search", body=self._add_filter(body),
                             mode=self._mode(mode))
-        if resp.status_code == 200:
-            # If no data returned response dictionary has no <aggregations> item
-            return  resp.json().get('aggregations', [])
-        if resp.status_code == 404:
-            # Index not found
-            return []
-        # request failed
-        logger = logging.getLogger(__name__)
-        logger.error(resp.text, stack_info=True)
-        return None
+        return  resp.json().get('aggregations', []) if resp else None
 
     def query_buckets(self, field:str, query:Dict[str, Any]=None,
                      max_buckets:int=None, quiet:bool=False,
@@ -541,9 +587,7 @@ class XElasticIndex(XElastic):
         }}}}
         resp = self.request(endpoint='_search', body=self._add_filter(body),
                             mode=self._mode(mode))
-        assert resp.status_code == 200, resp.text
-
-        return resp.json()["aggregations"]["agg"]["value"]
+        return resp.json()["aggregations"]["agg"]["value"] if resp else None
 
     def _add_filter(self, body:Dict[str, Any]=None, mode:Optional[str]=None
                    ) -> Dict[str, Any]:
@@ -699,7 +743,7 @@ class XElasticIndex(XElastic):
         Return a list of existing index names for the index key
         """
         resp = self.request(command='GET', endpoint='_settings')
-        if resp.status_code == 404:
+        if not resp:
             return []   # Mo indexes found, return empty list
         return list(resp.json().keys())
 
@@ -748,20 +792,14 @@ class XElasticIndex(XElastic):
             mode: the mode parameter
 
         Returns:
-            True if the period is set, False otherwise
+            True if the period is set, False if index not found
 
         Period has form 'xxxs' where xxx is number of seconds
         """
         body = {"index": {"refresh_interval": period}}
         resp = self.request(command='PUT', endpoint='_settings', body=body,
                             mode=self._mode(mode))
-        result = True
-        if resp.status_code != 200:
-            result = False
-            logger = logging.getLogger(__name__)
-            logger.info(f"Status {resp.status_code} _settings "
-                        f"{body}\n {resp.text}")
-        return result
+        return resp is not None
 
     def save(self, body:dict, xid:str=None, seq_primary:Tuple[int, int]=None,
              xdate:int=None, refresh:Union[str, bool, None]=None, mode:str=None
@@ -780,6 +818,8 @@ class XElasticIndex(XElastic):
         
         Returns:
             id of the created item or None on failure
+
+        Throws the catched expressions
         """
         if self.terms:
             for key, val in self.terms.items():
@@ -788,28 +828,14 @@ class XElasticIndex(XElastic):
         if xid:
             endpoint += xid
 
-        resp = self.request(endpoint=endpoint, seq_primary=seq_primary,
-                            refresh=refresh, body=body,
-                            xdate=xdate,  mode=self._mode(mode))
-        if resp.status_code not in (200, 201): # 201 - resource created
-            err = self._version_conflict(resp.json())
-            if err:
-                raise VersionConflictEngineException(err)
-            logger = logging.getLogger(__name__)
-            logger.error(resp.text)
-            # logger.error(resp.text, stack_info=True)
-            return None
-        return resp.json()['_id']
+        try:
+            resp = self.request(endpoint=endpoint, seq_primary=seq_primary,
+                                refresh=refresh, body=body,
+                                xdate=xdate,  mode=self._mode(mode))
+        except:
+            raise
 
-    def _version_conflict(self, resp:Dict[str, Any]) ->bool:
-        """
-        Returns Reason if the response text points to version conflict, None
-        otherwise
-        """
-        err = resp.get('error', {}).get('root_cause', [])
-        err = {} if len(err) < 1 else err[0]
-        return err.get('reason') if err.get('type') == VERSION_CONFLICT \
-            else None
+        return resp.json()['_id']
 
     def delete_item(self, xid:str, seq_primary:Tuple[int, int]=None, xdate:int=None,
                refresh:Union[str, bool, None]=None, mode:str=None) ->bool:
@@ -828,12 +854,14 @@ class XElasticIndex(XElastic):
             f'Date must be specified for span_type {span_type}'
 
         endpoint = '/'.join(('_doc', xid))
-        resp = self.request('DELETE', endpoint=endpoint, seq_primary=seq_primary,
+        try:
+            resp = self.request('DELETE', endpoint=endpoint, seq_primary=seq_primary,
                         refresh=refresh, xdate=xdate,  mode=self._mode(mode))
-        if resp.status_code != 200:
+        except:
+            raise
+        if not resp:
             logger = logging.getLogger(__name__)
-            print_stack = resp.status_code != 404
-            logger.error(resp.text, stack_info=print_stack)
+            logger.warning(f"Item {xid} not deleted as not exists")
             return False
         return True
 
@@ -847,7 +875,7 @@ class XElasticIndex(XElastic):
 # =============================================================================
 class XElasticUpdate(XElasticIndex):
     """
-    Adding scroll methods to the XElastic
+    Adding update methods to the XElastic
     """
 
     def __init__(self, esconf: Dict[str, Any], index_key:Optional[str]=None,
@@ -916,9 +944,9 @@ class XElasticUpdate(XElasticIndex):
         endpoint = '_update_by_query'
         resp = self.request(endpoint=endpoint, refresh=refresh, body=body,
                             xdate=xdate, mode=self._mode(mode))
-        if resp.status_code != 200:
+        if not resp:
             logger = logging.getLogger(__name__)
-            logger.info(f"Status {resp.status_code} {endpoint} date {xdate} "
+            logger.warning(f"Items not updated: {endpoint} date {xdate} "
                         f"{refresh} {body}\n {resp.text}")
             return -1
         resp_json = resp.json()
@@ -954,7 +982,9 @@ class XElasticUpdate(XElasticIndex):
             mode: the mode parameter
 
         Returns:
-            the update response
+            the update response or None if the item to update not found
+
+        Rethrows catched exceptions
 
         update response has form
             {'_index': ?, '_type': '_doc', '_id': ?, '_version': ?,
@@ -973,13 +1003,16 @@ class XElasticUpdate(XElasticIndex):
             body['script']['params'] = values
         endpoint = '/'.join(('_update', xid))
 
-        resp = self.request(endpoint=endpoint, seq_primary=seq_primary,
+        try:
+            resp = self.request(endpoint=endpoint, seq_primary=seq_primary,
                             refresh=refresh, body=body, xdate=xdate,
                             mode=self._mode(mode))
-        if resp.status_code != 200:
+        except:
+            raise
+            
+        if not resp:
             logger = logging.getLogger(__name__)
-            logger.error(f"Status {resp.status_code} {endpoint} date {xdate} "
-                        f"{seq_primary} {refresh} {body}\n {resp.text}")
+            logger.error(f"Item {xid} not found - not updated")
             return None
         return resp.json()
 
@@ -1051,18 +1084,15 @@ class XElasticScroll(XElasticIndex):
         """
         return self.count_index(self.scroll_conf['body'], mode=self._mode(mode))
 
-    def _scroll_next_batch(self, resp:requests.Response) ->bool:
+    def _scroll_next_batch(self, resp:requests.Response) ->None:
         """
         Handles the next scroll batch from <resp> and sets the instance variables
 
         Parameters:
             resp: the response of the request
             mode: the mode parameter
-
-        Returns:
-            True on success, False otherwise
         """
-        if resp.status_code == 200:
+        if resp:
             jresp = resp.json()
             # If no more data, buffer stays empty
             total_hits = jresp.get('hits',{}).get('total',{}).get('value',0)
@@ -1075,11 +1105,6 @@ class XElasticScroll(XElasticIndex):
                     'scroll': self.scroll_conf['keep'],
                     'scroll_id': self.scroll_conf['id']
                 }
-            return True
-
-        logger = logging.getLogger(__name__)
-        logger.error(f"{resp.status_code} {resp.text}")
-        return False
 
     def scroll(self, mode:Optional[str]=None) ->Optional[Dict[str, Any]]:
         """
@@ -1106,7 +1131,8 @@ class XElasticScroll(XElasticIndex):
                 self._scroll_next_batch(
                     # Executes the request for each but the first batch
                     self.request(endpoint=self.scroll_conf['endpoint_next'],
-                    body=self.scroll_conf['body'], mode=mode))
+                        index_key=False, body=self.scroll_conf['body'],
+                        mode=mode))
 
         return None if not self.scroll_conf['buffer'] else \
             self.scroll_conf['buffer'].pop(0)
@@ -1120,9 +1146,8 @@ class XElasticScroll(XElasticIndex):
         """
         body = {"scroll_id" : self.scroll_conf['id']}
         self.scroll_conf['buffer'] = None
-        self.request(command='DELETE', endpoint='/_search/scroll',
-                     body=body, mode=self._mode(mode))
-
+        self.request(command='DELETE', endpoint='_search/scroll',
+                     index_key=False, body=body, mode=self._mode(mode))
 
 # =============================================================================
 #       Bulk API

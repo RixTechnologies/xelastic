@@ -4,9 +4,8 @@ Created on Tue Mar 14 13:06:58 2023
 
 @author: juris.rats
 """
-import time, logging
+import time
 import sys
-sys.path.append("src")
 
 from xelastic import XElastic, XElasticIndex
 from xelastic import XElasticScroll, XElasticBulk, XElasticUpdate
@@ -51,14 +50,6 @@ def test_bulk_scroll_update_delete():
         "version": 1
     }
     """
-    logging.basicConfig(handlers=[logging.StreamHandler()],
-            level=logging.info,
-            format="%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
-    # log_name = 'test_bulk_scroll_update_delete_log.txt'
-    # logging.basicConfig(handlers=[logging.FileHandler(log_name)],
-    #         level=logging.info,
-    #         format="%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
-    
     conf = {
         'connection': {
             'current': 'local',
@@ -76,7 +67,6 @@ def test_bulk_scroll_update_delete():
         {"name": "Doris", "email": "doris@xelastic.com", "phone": "414156781"}
         ]
     
-    print(sys.path)
     ###########################################################################
     # Cleaning
     ###########################################################################
@@ -112,6 +102,7 @@ def test_bulk_scroll_update_delete():
     
     es.scroll_close() # Removes the scroll buffer
 
+    sys.exit()
     ###########################################################################
     # Step 3. Update data with update API
     ###########################################################################

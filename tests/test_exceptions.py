@@ -6,11 +6,11 @@ Created on Thu Mar 23 13:23:44 2023
 """
 import pytest
 import sys, logging, time
-sys.path.append("src")
+# sys.path.append("src")
 
 from xelastic import XElastic, XElasticIndex, VersionConflictEngineException
 
-def test_concurrency():
+def test_exceptions():
     """
     Connection to the Elasticsearch must be active
     """
@@ -24,10 +24,6 @@ def test_concurrency():
               'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
         }
 
-    logging.basicConfig(handlers=[logging.StreamHandler()],
-            level=logging.info,
-            format="%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
-
     ###########################################################################
     # Cleaning
     ###########################################################################
@@ -38,7 +34,25 @@ def test_concurrency():
     assert res, 'Cleaning failed'
 
     ###########################################################################
-    # Step 1. Check the concurrency control 
+    # Step 1. Check the valid rest request
+    ###########################################################################
+    es = XElastic(conf)
+
+    try:
+        es.request('GET', endpoint='_cat/allocation')
+    except:
+        assert False, "Step 1. Exception raised falsely"
+
+    ###########################################################################
+    # Step 2. Check the invalid rest request
+    ###########################################################################
+    # es = XElastic(conf)
+
+    # with pytest.raises(Exception):
+    #     es.request('GET', endpoint='_cat/allocations')
+
+    ###########################################################################
+    # Step 3. Check the concurrency control 
     ###########################################################################
     upd = int(time.time())
     body = {"name": "John", "email": "john@xelastic.com", "phone": "12345678",
@@ -49,7 +63,7 @@ def test_concurrency():
     ids = es.get_ids({"query": {"term": {"name": "John"}}})
     xid = ids[0]
     resp = es.get_data(xid, xdate=upd)
-    seq_primary = (resp['_seq_no'], (resp['_primary_term'] )) #  set wrong values
+    seq_primary = (resp['_seq_no'], (resp['_primary_term'])) #  set valid values
 
     try:
         es.save(body, xid=xid, xdate=upd, seq_primary=seq_primary,
@@ -64,7 +78,7 @@ def test_concurrency():
                        refresh='wait_for')
 
     ###########################################################################
-    # Step 2. Delete the indexes
+    # Step 4. Delete the indexes
     ###########################################################################
     indexes = es.get_indexes()
     es = XElastic(conf)
