@@ -136,6 +136,8 @@ class XElastic():
 
         # Retrieving specified connection and environment keys
         ckey = esconf['connection']['current']
+        assert ckey in esconf['connection'], \
+            f"Wrong current connection key {ckey} in config.yaml"
         usr = esconf['connection'][ckey].get('usr')
         self.request_conf:Dict[str, str] = {
             'auth': None if not usr else HTTPBasicAuth(*usr),
@@ -179,7 +181,7 @@ class XElastic():
                 - v: (or any other value - verbose) to run and log data
 
         Returns:
-            requests.Response object of the requests library
+            requests.Response object of the requests library or None if resource not found
 
         Mode might be set by the methods parameter or by the instance variable
         If both set parameter has a precedence.
@@ -241,7 +243,7 @@ class XElastic():
                     return None  # Return nothing
                 if status_code == 409: # version conflict
                     raise VersionConflictEngineException(err)
-                logger.error(err)
+                logger.error(f"{err}\n{command} body {data}\n{resp.text}")
                 raise
             except requests.exceptions.RequestException as err:
                 logger.error(err)
@@ -257,7 +259,7 @@ class XElastic():
         #         err = self._version_conflict(jresp)
         #         if err:
         #             raise VersionConflictEngineException(err)
-        #     # Executes if JSOMDecodeError or if no version conflict
+        #     # Executes if JSONDecodeError or if no version conflict
         #     logger.error(resp.text, stack_info=True)
         #     raise Exception(resp.text)
 

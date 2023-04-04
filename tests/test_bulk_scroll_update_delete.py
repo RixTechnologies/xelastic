@@ -5,7 +5,7 @@ Created on Tue Mar 14 13:06:58 2023
 @author: juris.rats
 """
 import time
-import sys
+#import sys
 
 from xelastic import XElastic, XElasticIndex
 from xelastic import XElasticScroll, XElasticBulk, XElasticUpdate
@@ -102,7 +102,6 @@ def test_bulk_scroll_update_delete():
     
     es.scroll_close() # Removes the scroll buffer
 
-    sys.exit()
     ###########################################################################
     # Step 3. Update data with update API
     ###########################################################################
