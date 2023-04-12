@@ -206,7 +206,7 @@ class XElastic():
         
         See descriptions of the request method for details. The only difference
         is the parameter 'data' which is a 'body' dictionary of the request 
-        method converted to json string
+        method converted to json string.
         """
         logger = logging.getLogger(__name__)
 
@@ -225,7 +225,7 @@ class XElastic():
         if params: # Add url parameters if specified
             #req = requests.get(url, params=params)
             #url = req.url
-            url = self._make_params(url, params)
+            url = self._set_params(url, params)
 
         if mode:
             logger.info(f"command {command}, index_key {self.index_key}"
@@ -247,46 +247,8 @@ class XElastic():
                 raise
             except requests.exceptions.RequestException as err:
                 logger.error(err)
-        # logger.info(f"{type(resp.status_code)} {self._status_ok(resp.status_code)}")
-        # if not self._status_ok(resp.status_code):
-        #     if resp.status_code == 404:
-        #         raise 
-        #     try:
-        #         jresp = resp.json()
-        #     except json.JSONDecodeError:
-        #         pass
-        #     else:
-        #         err = self._version_conflict(jresp)
-        #         if err:
-        #             raise VersionConflictEngineException(err)
-        #     # Executes if JSONDecodeError or if no version conflict
-        #     logger.error(resp.text, stack_info=True)
-        #     raise Exception(resp.text)
 
         return resp
-
-    def _status_ok(self, status:int) ->bool:
-        """
-        Returns True if the status relates to a successful rest api completion.
-        The statuses that start with 2 are considered here as successful ones
-        """
-        return status // 100 == 2
-
-    def _version_conflict(self, resp:Dict[str, Any]) ->bool:
-        """
-        Returns Reason if the response text points to version conflict, None
-        otherwise
-        """
-        err = resp.get('error')
-        if any((err is None, isinstance(err, str))):
-            # root error object does not include error key or the error key
-            # value is a plain text (not dictionary); this cannot be a valid
-            # description of a version conflict
-            return None
-        err = err.get('root_cause', [])
-        err = {} if len(err) < 1 else err[0]
-        return err.get('reason') if err.get('type') == VERSION_CONFLICT \
-            else None
 
     def usage(self, mode:Optional[str]=None):
         """
@@ -295,6 +257,8 @@ class XElastic():
         Parameters:
             mode: the mode parameter
             
+        Returns:
+            Disk usage percent
         """
         endpoint = "_cat/allocation"
         resp = self.request(mode=self._mode(mode),
@@ -303,6 +267,8 @@ class XElastic():
 
     def _mode(self, mode:str) ->str:
         """
+        Returns mode if set else self.mode
+
         Parameters:
             mode: the mode parameter
 
@@ -311,7 +277,7 @@ class XElastic():
         """
         return mode if mode else self.mode
 
-    def _make_params(self, url:str, params:Dict[str, Any]) ->str:
+    def _set_params(self, url:str, params:Dict[str, Any]) ->str:
         """
         Makes parameter string of form ?par1&par2 ... and appends it to the url
         
@@ -322,7 +288,8 @@ class XElastic():
         Returns:
             url with parameter string appended
         """
-        return '?'.join((url, urllib.parse.urlencode(params)))
+        return '?'.join((url, urllib.parse.urlencode(params))) if params \
+            else url
 
     def delete_indexes(self, indexes:list, mode:Optional[str]=None) ->bool:
         """
@@ -587,9 +554,7 @@ class XElasticIndex(XElastic):
               "cardinality": {
                 "field": field
         }}}}
-        resp = self.request(endpoint='_search', body=self._add_filter(body),
-                            mode=self._mode(mode))
-        return resp.json()["aggregations"]["agg"]["value"] if resp else None
+        return self.agg_index(body, self._mode(mode))["agg"]["value"]
 
     def _add_filter(self, body:Dict[str, Any]=None, mode:Optional[str]=None
                    ) -> Dict[str, Any]:
@@ -751,7 +716,7 @@ class XElasticIndex(XElastic):
 
     def create_term_filter(self, terms:Dict[str, Any]) ->list:
         """
-        Creates terms filter ([{"term": {<field>: <value>}}, ...]) from the
+        Creates term filter ([{"term": {<field>: <value>}}, ...]) from the
         <terms> dictionary
 
         Parameters:
@@ -765,9 +730,11 @@ class XElasticIndex(XElastic):
     def mlt(self, xids:list, mlt_conf:Dict[str, Any], mode:Optional[str]=None
             )-> Dict[str, Any]:
         """
-        Retrieves more-like-this query for <xids> and configuration <mlt_conf>
+        Retrieves more-like-this query for document set identified by <xids>
+        and configuration <mlt_conf>
 
         Parameters:
+            xids: a list of ids of documents to search similar documents for
             mlt_conf: configuration dictionary for Elasticsearch mlt query
             mode: the mode parameter
 
@@ -796,7 +763,7 @@ class XElasticIndex(XElastic):
         Returns:
             True if the period is set, False if index not found
 
-        Period has form 'xxxs' where xxx is number of seconds
+        Period may be set in form 'xxxs' where xxx is number of seconds
         """
         body = {"index": {"refresh_interval": period}}
         resp = self.request(command='PUT', endpoint='_settings', body=body,
@@ -842,7 +809,7 @@ class XElasticIndex(XElastic):
     def delete_item(self, xid:str, seq_primary:Tuple[int, int]=None, xdate:int=None,
                refresh:Union[str, bool, None]=None, mode:str=None) ->bool:
         """
-        Deletes the item specified by xid from the index
+        Deletes from the index the item specified by xid
         
         Parameters:
             xid: The id of the item to delete
@@ -1110,14 +1077,15 @@ class XElasticScroll(XElasticIndex):
 
     def scroll(self, mode:Optional[str]=None) ->Optional[Dict[str, Any]]:
         """
+        Retrieves the item from the scroll buffer.
+        If the process is not started yet, executes the first scroll request
+        If the buffer is empty, retrieves the next batch of items
+
         Parameters:
             mode: the mode parameter
 
         Returns:
             the next item from the scroll buffer (the item of ES hits list).
-        
-        If the process is not started yet executes the first scroll request
-        If the buffer is empty, retrieves the next batch of items
         """
         mode = self._mode(mode)
         if not self.scroll_conf.get('buffer'):
@@ -1268,6 +1236,7 @@ class XElasticBulk(XElasticIndex):
             self.bulk_conf['error'] = True
             logger.info(f"status {resp.status_code} error {resp.text}")
         elif resp.json().get('errors'):
+            self.bulk_conf['error'] = True
             logger.info(f"error {resp.text}")
         self._bulk_clear()
 
