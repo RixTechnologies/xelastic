@@ -174,7 +174,6 @@ class XElastic():
                     relevant index shards
             body: body of the REST request
             xdate: date value used to determine the index (for time spanned indexes)
-            use_index_key: If False index name is not appended to the endpoint
             mode:
                 - None: (run) to run silently
                 - f: (fake) to log parameters without running the request
@@ -250,7 +249,7 @@ class XElastic():
 
         return resp
 
-    def usage(self, mode:Optional[str]=None):
+    def usage(self, mode:Optional[str]=None) ->int:
         """
         Retrieves disk usage
         
@@ -341,7 +340,6 @@ class XElasticIndex(XElastic):
             esconf: configuration dictionary for the Elasticsearch connection
             index_key: the index key for the instance
             terms: terms dictionary of form {key1: value1, key2: value2, ...}
-            body: query body to filter the items for scrolling
             mode: may set mode for all requests for the current class instance
         """
         super().__init__(esconf, mode)
@@ -857,7 +855,6 @@ class XElasticUpdate(XElasticIndex):
             esconf: configuration dictionary for the Elasticsearch connection
             index_key: the index key for the instance
             terms: terms dictionary of form {key1: value1, key2: value2, ...}
-            body: query body to filter the items for scrolling
             mode: may set mode for all requests for the current class instance
         """
         super().__init__(esconf, index_key, terms, mode)
