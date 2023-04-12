@@ -5,7 +5,7 @@ Created on Thu Mar 23 13:23:44 2023
 @author: juris.rats
 """
 import pytest
-import sys, logging, time
+import time
 # sys.path.append("src")
 
 from xelastic import XElastic, XElasticIndex, VersionConflictEngineException
