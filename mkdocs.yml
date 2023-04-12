@@ -2,8 +2,8 @@ site_name: xelastic
 site_description: Easy access to Elasticsearch indexes
 site_author: Juris Rāts
 
-repo_url: https://github.com/jurisra/xelastic/
-
+remote_name: xelastic
+repo_url: https://github.com/RixTechnologies/xelastic/
 
 theme:
   name: "material"

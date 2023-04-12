@@ -10,4 +10,4 @@ The xelastic class provides basic methods to handle requests to the elasticsearc
 
 When indexing the data xelastic will automatically save it into index of the correct time span.
 
-Visit the project pages [here](https://jurisra.github.io/xelastic)
+Visit the project pages [here](https://RixTechnologies.github.io/xelastic)
