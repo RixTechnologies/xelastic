@@ -6,16 +6,20 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="Easy access to Elasticsearch indexes">
+      
+      
+        <meta name="author" content="Juris Rāts">
       
       
       
-        <link rel="prev" href="../tutorials/">
+        <link rel="prev" href="..">
       
       
         <link rel="next" href="../reference/">
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.1">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.2">
     
     
       
@@ -23,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.402914a4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.7bf56d0a.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.a0c5b2b5.min.css">
@@ -68,6 +72,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#how-to-guides" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -109,6 +118,18 @@
     
     
     
+      <div class="md-header__source">
+        <a href="https://github.com/jurisra/xelastic/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
   </nav>
   
 </header>
@@ -142,6 +163,18 @@
     xelastic
   </label>
   
+    <div class="md-nav__source">
+      <a href="https://github.com/jurisra/xelastic/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
   <ul class="md-nav__list" data-md-scrollfix>
     
       
@@ -165,21 +198,6 @@
 
   
   
-  
-    <li class="md-nav__item">
-      <a href="../tutorials/" class="md-nav__link">
-        Tutorial
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
     
   
   
@@ -188,10 +206,64 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          How-To
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         How-To
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-set-xelastic-up" class="md-nav__link">
+    How to set xelastic up
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-bulk-index-the-data" class="md-nav__link">
+    How to bulk index the data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-retrieve-data-with-scroll" class="md-nav__link">
+    How to retrieve data with scroll
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-update-the-fields-by-query-and-by-id" class="md-nav__link">
+    How to update the fields by query and by ID
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -207,21 +279,6 @@
     <li class="md-nav__item">
       <a href="../reference/" class="md-nav__link">
         Reference
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../explanation/" class="md-nav__link">
-        Explanation
       </a>
     </li>
   
@@ -244,6 +301,44 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-set-xelastic-up" class="md-nav__link">
+    How to set xelastic up
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-bulk-index-the-data" class="md-nav__link">
+    How to bulk index the data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-retrieve-data-with-scroll" class="md-nav__link">
+    How to retrieve data with scroll
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-update-the-fields-by-query-and-by-id" class="md-nav__link">
+    How to update the fields by query and by ID
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -257,10 +352,88 @@
                 
                   
 
+  
+  
 
-  <h1>How-To</h1>
 
+<h1 id="how-to-guides">How-to guides</h1>
+<h2 id="how-to-set-xelastic-up">How to set xelastic up</h2>
+<ul>
+<li>Download the code file xelastic.py</li>
+<li>Design the indexes of your application, e.g.</li>
+<li>one index type cst with data of your customers having fields 'name', 'street_address', 'email', 'phone' and 'updated'</li>
+<li>indexes will be split by month on field 'updated'</li>
+<li>we will use one source src</li>
+<li>the prefix for our application indexes will be ta</li>
+<li>The above means our application indexes will have names ta-cst-src-\&lt;yyyy-mm> where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index</li>
+<li>Create index template for cst index using ta-cst* as a template pattern; this will ensure the monthly indexes are created automatically when necessary</li>
+<li>create the configuration dictionary (reference to full description of config dictionary)</li>
+</ul>
+<pre><code class="language-python">conf = {
+    'connection': {
+        'current': 'local',
+        'local': {'client': 'http://localhost:9200/'}},
+    'prefix': 'ta',
+    'source': 'src',
+    'indexes': {
+        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
+}
+</code></pre>
+<h2 id="how-to-bulk-index-the-data">How to bulk index the data</h2>
+<p>We assume that you have already created and saved into your ES cluster the index template for sample customers index.
+You can use here the sample. <a href="#how-to-set-xelastic-up">See here</a> for setup and conf sample.</p>
+<p>The script below will batch index to the customers index the data you will provide in the items list below.</p>
+<pre><code class="language-python">import time
+from xelastic import xelastic
 
+items = [{&quot;name&quot;: &quot;John&quot;, &quot;email&quot;: &quot;john@xelastic.com&quot;, &quot;phone&quot;: &quot;12345678&quot;}, ...]
+
+es_to = xelastic(conf, 'customers') # Create xelastic instance for customers index
+es_to.bulk_set() # Initialize the bulk indexing
+for item in items:
+    item['updated'] = int(time.time()) # Set updated to the current timestamp
+    # Add the current item to the bulk buffer; this sends a bulk to ES index when
+    # buffer is full
+    es_to.bulk_index(item)
+
+es_to.bulk_close() # Sends the latest bulk to the ES index
+</code></pre>
+<h2 id="how-to-retrieve-data-with-scroll">How to retrieve data with scroll</h2>
+<p>You should use index template and <a href="#how-to-set-xelastic-up">conf dictionary</a> as well as fill index with some data before to use the script below. You may use <a href="#how-to-bulk-index-the-data">bulk index script</a> to fill the index.</p>
+<pre><code class="language-python">from xelastic import xelastic
+es_from = xelastic(conf, 'customers') # Create xelastic instance for customers index
+es_from.scroll_set() # Initialize the scroll requests
+# Retrieve an item from the scroll batch. Retrieve next batch if the current one
+# is empty
+while item := es_from.scroll():
+  print(item)
+
+es_from.scroll_close() # Removes the scroll buffer
+</code></pre>
+<h2 id="how-to-update-the-fields-by-query-and-by-id">How to update the fields by query and by ID</h2>
+<p>You should use index template and <a href="#how-to-set-xelastic-up">conf dictionary</a> as well as use script described in (link??) to create data before to use the script below.</p>
+<pre><code class="language-python">import time
+from xelastic import xelastic
+
+xes = xelastic(conf, 'customers') # Create xelastic instance for customers index
+xes.setUpdBody('update1', upd_fields=['phone', 'email'])
+xes.setUpdBody('update2', upd_fields=['phone'], del_fields=['email'])
+print(xes.upd_bodies)
+print()
+
+# update fields by query
+xes.updateFields('update1', xfilter={'term': {'name': 'Jane'}},
+                values = {'phone': '4242424242', 'email': 'Jane_new@xelastic.com'})
+
+# update fields by item id  (points to the item for John)
+# must specify xdate to identify the time span (and index) the item to update is located
+xes.updateFieldsById('update2', xid='v1iHxoYB1hLWYRnWTupi', xdate=int(time.time()),
+                values = {'phone': '66666666'})
+
+# Print the updated index
+hits, _ = xes.queryIndex()
+print(hits)
+</code></pre>
 
 
 
@@ -301,7 +474,7 @@
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.b78d2936.min.js"></script>
+      <script src="../assets/javascripts/bundle.fc8c2696.min.js"></script>
       
     
   </body>
