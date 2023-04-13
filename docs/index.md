@@ -1,13 +1,18 @@
-## How to set xelastic up
-* Download the code file xelastic.py
-* Design the indexes of your application, e.g.
-  * one index type cst with data of your customers having fields 'name', 'street_address', 'email', 'phone' and 'updated'
-  * indexes will be split by month on field 'updated'
-  * we will use one source src
-  * the prefix for our application indexes will be ta
-* The above means our application indexes will have names ta-cst-src-\<yyyy-mm\> where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index
+## How to install and set up xelastic
+* Download the whl file and install xelastic with a command
+```
+pip install <path to the whl file on your computer>
+```
+* Design the indexes of your application
+> The sample configuration we use here is
+* a single customers index having fields *name*, *street_address*, *email*, *phone* and *created*
+* indexes will be split by month on field *created*
+* we use a single source *src*
+* the prefix for our application indexes is *ta*
+> The above means our application indexes will have names ta-cst-src-\<yyyy-mm\> where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index
+
 * Create index template for cst index using ta-cst* as a template pattern; this will ensure the monthly indexes are created automatically when necessary
-* create the configuration dictionary (reference to full description of config dictionary)
+* create the configuration dictionary ([see here](how-to-guides.md#how-to-configure-xelastic) for full description)
 
 ```python
 conf = {
@@ -17,7 +22,7 @@ conf = {
 	'prefix': 'ta',
 	'source': 'src',
 	'indexes': {
-		'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
+		'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
 }
 ```
-Use How To guides and Referenc for further guidance.
+Use How-To guides and Reference for further assistance.

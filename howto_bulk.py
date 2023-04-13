@@ -7,7 +7,7 @@ Assumed that an index template is created:
     street_address
     email
     phone
-    updated
+    created
 
 PUT _index_template/template-xelastic
 {
@@ -22,7 +22,7 @@ PUT _index_template/template-xelastic
                   "name": {"type": "keyword"},
                   "email": {"type": "keyword"},
                   "phone": {"type": "keyword"},
-                  "updated": {"type": "date", "format": "epoch_second"}
+                  "created": {"type": "date", "format": "epoch_second"}
             }
         },
         "aliases": {}
@@ -55,7 +55,7 @@ conf = {
     'source': 'src',
     'timeout': 10,
     'indexes': {
-        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
+        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
    }
 
 items = [
@@ -68,7 +68,7 @@ items = [
 es_to = XElasticBulk(conf, 'customers', refresh='wait_for')
 
 for item in items:
-    item['updated'] = int(time.time()) # Set updated to the current timestamp
+    item['created'] = int(time.time()) # Set created to the current timestamp
     # Add the current item to the bulk buffer; this sends a bulk to ES index when
     # buffer is full
     es_to.bulk_index(item)

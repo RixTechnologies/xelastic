@@ -38,7 +38,7 @@ def test_bulk_scroll_update_delete():
                       "name": {"type": "keyword"},
                       "email": {"type": "keyword"},
                       "phone": {"type": "keyword"},
-                      "updated": {"type": "date", "format": "epoch_second"}
+                      "created": {"type": "date", "format": "epoch_second"}
                 }
             },
             "aliases": {}
@@ -58,7 +58,7 @@ def test_bulk_scroll_update_delete():
         'source': 'src',
         'timeout': 10,
         'indexes': {
-            'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
+            'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
        }
     
     items = [
@@ -85,7 +85,7 @@ def test_bulk_scroll_update_delete():
     upd_time = int(time.time())
     
     for seq, item in enumerate(items):
-        item['updated'] = upd_time # Set updated to the current timestamp
+        item['created'] = upd_time # Set created to the current timestamp
         # Add the current item to the bulk buffer; this sends a bulk to ES index when
         # buffer is full
         es.bulk_index(item, xid=seq+1)

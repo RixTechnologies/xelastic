@@ -108,9 +108,6 @@ SHARED = 'shr'          # source reference for namef of the shared indexes
 
 VERSION_CONFLICT = 'version_conflict_engine_exception'
 
-class ResourceNotFound(Exception):
-    pass
-
 class VersionConflictEngineException(Exception):
     pass
 
@@ -151,7 +148,10 @@ class XElastic():
         self.max_buckets = esconf.get('max_buckets', 99)
 
         # Retrieve the Elasticsearch version
-        resp = self.request('GET', mode=mode).json()
+        try:
+            resp = self.request('GET', mode=mode).json()
+        except:
+            raise
         self.es_version = int(resp['version']['number'].split('.')[0])
 
     def request(self, command:str='POST', endpoint:str='',
@@ -231,7 +231,10 @@ class XElastic():
                         f" url {url} body {data}")
         if mode == 'f':
             # execute dummy request
-            resp = requests.request('GET', self.es_client, **self.request_conf)
+            try:
+                resp = requests.request('GET', self.es_client, **self.request_conf)
+            except:
+                raise
         else:
             try:
                 resp = requests.request(command, url, data = data, **self.request_conf)
@@ -260,8 +263,11 @@ class XElastic():
             Disk usage percent
         """
         endpoint = "_cat/allocation"
-        resp = self.request(mode=self._mode(mode),
+        try:
+            resp = self.request(mode=self._mode(mode),
             command='GET', endpoint=endpoint)
+        except:
+            raise
         return int(resp.text.split()[5])
 
     def _mode(self, mode:str) ->str:
@@ -306,8 +312,11 @@ class XElastic():
         for index in indexes:
             # set index name directly to handle indexes with time spans -
             # here indexes have to be deleted one by one
-            resp = self.request(command="DELETE", endpoint=index,
-                                mode=self._mode(mode))
+            try:
+                resp = self.request(command="DELETE", endpoint=index,
+                                    mode=self._mode(mode))
+            except:
+                raise
             if not resp:
                 logger.warning(f"Index {index} not found when trying to delete")
             elif not resp.json().get('acknowledged'):
@@ -389,13 +398,11 @@ class XElasticIndex(XElastic):
             f'Date must be specified for span_type {span_type}'
 
         endpoint = '/'.join(('_doc', xid))
-        resp = self.request(command='GET', endpoint=endpoint, xdate=xdate,
-                            mode=self._mode(mode))
-        # if resp.status_code != 200:
-        #     logger = logging.getLogger(__name__)
-        #     print_stack = resp.status_code != 404
-        #     logger.error(f"{resp.status_code}: {resp.text}", stack_info=print_stack)
-        #     return None
+        try:
+            resp = self.request(command='GET', endpoint=endpoint, xdate=xdate,
+                                mode=self._mode(mode))
+        except:
+            raise
         return None if not resp else resp.json()
 
     def get_source_fields(self, xid:str, xdate:int=None, mode:Optional[str]=None
@@ -411,7 +418,10 @@ class XElasticIndex(XElastic):
         Returns:
             the item data (_source) or None if item with id <xid> not found
         """
-        resp = self.get_data(xid, xdate, self._mode(mode))
+        try:
+            resp = self.get_data(xid, xdate, self._mode(mode))
+        except:
+            raise
         return resp.get('_source') if resp else None
 
     def count_index(self, body:Dict[str, Any]=None, mode:Optional[str]=None
@@ -427,8 +437,11 @@ class XElasticIndex(XElastic):
         Returns:
             item count for the given filter
         """
-        resp = self.request(endpoint="_count", body=self._add_filter(body),
-                            mode=self._mode(mode))
+        try:
+            resp = self.request(endpoint="_count", body=self._add_filter(body),
+                                mode=self._mode(mode))
+        except:
+            raise
         return resp.json()['count'] if resp else 0
 
     def query_index(self, body:Dict[str, Any]=None, mode:Optional[str]=None
@@ -447,8 +460,11 @@ class XElasticIndex(XElastic):
         When error returns empty list and the error type (string)
         Adds self.terms filter if set
         """
-        resp = self.request(endpoint="_search", body=self._add_filter(body),
-                            mode=self._mode(mode))
+        try:
+            resp = self.request(endpoint="_search", body=self._add_filter(body),
+                                mode=self._mode(mode))
+        except:
+            raise
         if resp:
             hits = resp.json()['hits']
             return hits['hits'], hits['total']['value']
@@ -473,7 +489,10 @@ class XElasticIndex(XElastic):
         if body is None:
             body = {}
         body['_source'] = False
-        hits, _ = self.query_index(body, mode=self._mode(mode))
+        try:
+            hits, _ = self.query_index(body, mode=self._mode(mode))
+        except:
+            raise
         return [hit['_id'] for  hit in hits]
 
     def agg_index(self, body:Dict[str, Any], mode:Optional[str]=None
@@ -491,8 +510,11 @@ class XElasticIndex(XElastic):
 
         Adds self.terms filter if set
         """
-        resp = self.request(endpoint="_search", body=self._add_filter(body),
-                            mode=self._mode(mode))
+        try:
+            resp = self.request(endpoint="_search", body=self._add_filter(body),
+                                mode=self._mode(mode))
+        except:
+            raise
         return  resp.json().get('aggregations', []) if resp else None
 
     def query_buckets(self, field:str, query:Dict[str, Any]=None,
@@ -519,8 +541,11 @@ class XElasticIndex(XElastic):
                 "aggs": {"agg": {"terms": {"field": field, "size": mbuckets}}}}
         if query:
             body['query'] = query
-        aggs = self.agg_index(body, self._mode(mode))
-        #print(body, index_key, aggs)
+        try:
+            aggs = self.agg_index(body, self._mode(mode))
+        except:
+            raise
+
         if aggs:
             buckets = aggs['agg']['buckets']
             others = aggs['agg'].get('sum_other_doc_count',0)
@@ -552,7 +577,10 @@ class XElasticIndex(XElastic):
               "cardinality": {
                 "field": field
         }}}}
-        return self.agg_index(body, self._mode(mode))["agg"]["value"]
+        try:
+            return self.agg_index(body, self._mode(mode))["agg"]["value"]
+        except:
+            raise
 
     def _add_filter(self, body:Dict[str, Any]=None, mode:Optional[str]=None
                    ) -> Dict[str, Any]:
@@ -707,7 +735,10 @@ class XElasticIndex(XElastic):
         """
         Return a list of existing index names for the index key
         """
-        resp = self.request(command='GET', endpoint='_settings')
+        try:
+            resp = self.request(command='GET', endpoint='_settings')
+        except:
+            raise
         if not resp:
             return []   # Mo indexes found, return empty list
         return list(resp.json().keys())
@@ -764,8 +795,11 @@ class XElasticIndex(XElastic):
         Period may be set in form 'xxxs' where xxx is number of seconds
         """
         body = {"index": {"refresh_interval": period}}
-        resp = self.request(command='PUT', endpoint='_settings', body=body,
-                            mode=self._mode(mode))
+        try:
+            resp = self.request(command='PUT', endpoint='_settings', body=body,
+                                mode=self._mode(mode))
+        except:
+            raise
         return resp is not None
 
     def save(self, body:dict, xid:str=None, seq_primary:Tuple[int, int]=None,
@@ -908,8 +942,11 @@ class XElasticUpdate(XElasticIndex):
         if values:
             body['script']['params'] = values
         endpoint = '_update_by_query'
-        resp = self.request(endpoint=endpoint, refresh=refresh, body=body,
-                            xdate=xdate, mode=self._mode(mode))
+        try:
+            resp = self.request(endpoint=endpoint, refresh=refresh, body=body,
+                                xdate=xdate, mode=self._mode(mode))
+        except:
+            raise
         if not resp:
             logger = logging.getLogger(__name__)
             logger.warning(f"Items not updated: {endpoint} date {xdate} "
@@ -1048,7 +1085,10 @@ class XElasticScroll(XElasticIndex):
         Returns:
             The total number of items matching the scroll request
         """
-        return self.count_index(self.scroll_conf['body'], mode=self._mode(mode))
+        try:
+            return self.count_index(self.scroll_conf['body'], mode=self._mode(mode))
+        except:
+            raise
 
     def _scroll_next_batch(self, resp:requests.Response) ->None:
         """
@@ -1091,15 +1131,21 @@ class XElasticScroll(XElasticIndex):
             # return the next item from the batch
             if self.scroll_conf['id'] is None:
                 # Executes the request for the first batch of items
-                self._scroll_next_batch(
-                    self.request(endpoint=self.scroll_conf['endpoint_first'],
-                                 body=self.scroll_conf['body'], mode=mode))
+                try:
+                    self._scroll_next_batch(
+                        self.request(endpoint=self.scroll_conf['endpoint_first'],
+                                     body=self.scroll_conf['body'], mode=mode))
+                except:
+                    raise
             else:
-                self._scroll_next_batch(
-                    # Executes the request for each but the first batch
-                    self.request(endpoint=self.scroll_conf['endpoint_next'],
-                        index_key=False, body=self.scroll_conf['body'],
-                        mode=mode))
+                try:
+                    self._scroll_next_batch(
+                        # Executes the request for each but the first batch
+                        self.request(endpoint=self.scroll_conf['endpoint_next'],
+                            index_key=False, body=self.scroll_conf['body'],
+                            mode=mode))
+                except:
+                    raise
 
         return None if not self.scroll_conf['buffer'] else \
             self.scroll_conf['buffer'].pop(0)
@@ -1113,8 +1159,11 @@ class XElasticScroll(XElasticIndex):
         """
         body = {"scroll_id" : self.scroll_conf['id']}
         self.scroll_conf['buffer'] = None
-        self.request(command='DELETE', endpoint='_search/scroll',
-                     index_key=False, body=body, mode=self._mode(mode))
+        try:
+            self.request(command='DELETE', endpoint='_search/scroll',
+                         index_key=False, body=body, mode=self._mode(mode))
+        except:
+            raise
 
 # =============================================================================
 #       Bulk API
@@ -1145,7 +1194,10 @@ class XElasticBulk(XElasticIndex):
         self.mode = self._mode(mode) # Setmode for use in calls of the current bulk
 
         if refresh_interval:
-            self.set_refresh(period=refresh_interval)
+            try:
+                self.set_refresh(period=refresh_interval)
+            except:
+                raise
 
         # Configuration for the bulk API
         xmax = bulk_max if bulk_max else esconf.get('index_bulk', 1000)
@@ -1180,7 +1232,10 @@ class XElasticBulk(XElasticIndex):
             "bulk counter overflow"
 
         if self.bulk_conf['curr'] == self.bulk_conf['max']:
-            self._bulk_flush(mode=self._mode(mode))
+            try:
+                self._bulk_flush(mode=self._mode(mode))
+            except:
+                raise
 
         if not action:
             action = 'index' # Set index action if not specified
@@ -1205,7 +1260,10 @@ class XElasticBulk(XElasticIndex):
         Returns:
             True if no errors in flush and set_refresh
         """
-        self._bulk_flush(mode=self._mode(mode), refresh=self.bulk_conf['refresh'])
+        try:
+            self._bulk_flush(mode=self._mode(mode), refresh=self.bulk_conf['refresh'])
+        except:
+            raise
         # Resets the main mode of the class instance
         self.mode = self.bulk_conf['main_mode']
         # indicates that bulk indexing is not initialized
@@ -1226,8 +1284,11 @@ class XElasticBulk(XElasticIndex):
         """
         if self.bulk_conf['curr'] == 0:
             return # nothing to flush
-        resp = self._request_json(endpoint='_bulk', refresh=refresh,
-                    data=self.bulk_conf['buffer'], mode=self._mode(mode))
+        try:
+            resp = self._request_json(endpoint='_bulk', refresh=refresh,
+                        data=self.bulk_conf['buffer'], mode=self._mode(mode))
+        except:
+            raise
         logger = logging.getLogger(__name__)
         if resp.status_code != 200:
             self.bulk_conf['error'] = True

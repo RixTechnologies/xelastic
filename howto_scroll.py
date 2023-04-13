@@ -16,7 +16,7 @@ conf = {
     'prefix': 'ta',
     'source': 'src',
     'indexes': {
-        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
+        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
    }
 
 es_from = XElasticScroll(conf, 'customers') # Create xelastic instance for customers index

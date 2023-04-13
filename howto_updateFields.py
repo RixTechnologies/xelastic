@@ -17,7 +17,7 @@ conf = {
     'prefix': 'ta',
     'source': 'src',
     'indexes': {
-        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
+        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
 }
 
 

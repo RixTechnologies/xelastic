@@ -21,7 +21,7 @@ def test_exceptions():
           'prefix': 'ta',
           'source': 'src',
           'indexes': {
-              'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
+              'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
         }
 
     ###########################################################################
@@ -56,7 +56,7 @@ def test_exceptions():
     ###########################################################################
     upd = int(time.time())
     body = {"name": "John", "email": "john@xelastic.com", "phone": "12345678",
-            "updated": upd}
+            "created": upd}
     es = XElasticIndex(conf, "customers")
 
     resp = es.save(body, xdate=upd, refresh='wait_for')
