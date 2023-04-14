@@ -12,7 +12,7 @@ pip install <path to the whl file on your computer>
 > The above means our application indexes will have names ta-cst-src-\<yyyy-mm\> where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index
 
 * Create index template for cst index using ta-cst* as a template pattern; this will ensure the monthly indexes are created automatically when necessary
-* create the configuration dictionary ([see here](how-to-guides.md#how-to-configure-xelastic) for full description)
+* create the configuration dictionary ([see here](reference.md#src.xelastic.XElastic.__init__) for full description)
 
 ```python
 conf = {

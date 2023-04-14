@@ -2,7 +2,8 @@
 ## How to bulk index the data
 We assume that you have already created and saved into your ES cluster the index template for sample customers index.
 
-The script below will batch index to the customers index the data you will provide in the items list below. [See here](#how-to-configure-xelastic) for a conf sample.
+The script below will batch index to the customers index the data you will provide in the items list below.
+See [here](reference.md#src.xelastic.XElastic.__init__) for the description of the conf parameter.
 
 ```python
 import time
@@ -61,35 +62,34 @@ xes.update_fields_by_id('update2', xid=xid, xdate=int(time.time()),
 hits, _ = xes.query_index()
 print(hits)
 ```
-## How to configure xelastic
-Configuration data is transfered to xelastic object via conf parameter. This happens when a new xelastic object is created.
-Parameter conf is a dictionary of the following structure:
+## How to handle exceptions
+All xelastic methods that do not provide specific exception handling just raise the catched exceptions to leave handling for the caller.
+Exceptions are:
+
+* resource not found (exception not raised, None returned)
+* VersionConflictEngineException - the exception raised when version conflict occurs while trying to update index ([see How to handle update conflicts](#how-to-handle-update-conflicts))
+
+## How to handle update conflicts
+Elasticsearch uses a versioning system to manage conflicts that can occur when multiple users or processes
+try to modify the same document at the same time. A unique version of the document is identified by values of 
+metafields _seq_no and _primary_term. The application has to check the values of these fields
+when updating the document to ensure that it updates the right version of the document.
+
+A sample workflow of the document update:
+
+* read the document with get_data and remember values of _seq_no and _primary_term
+* make updates to the document
+* save the document with save method and transfer the remembered _seq_no / _primary_term
+values in seq_primary parameter
+* catch VersionConflictEngineException to identify a version conflict 
+
+## How to handle logging
+xelastic uses python basic logging. You may configure logging to match your preferences.
+E.g.:
 ```
-connection:
-    current: <connection name> # currently in use connection
-    <connection name>:
-        client: <http/https address>:9200/
-        usr: [<user name>, <password>] # if authentification used
-        cert: <cer file name> # if used
-    <other connection name>:
-        ...
-prefix: <prefix for the application indexes>
-source: <source name>
-indexes: # a list of indexes used by the application
-    # date_field must be specified if span_type != n
-    <index key>: {
-        stub: <index stub>,
-        span_type: <d, m, q, y or n>,   # daily, monthlyl, quaterly, yearly
-                                        # or not time spanned
-        date_field: <date field name>,  # used for all span types but n
-        shared: <True or False (default)>   # only one index is created for all
-                                            # sources with source key shr
-    }
-    <next index key>: ...
-keep: 50m # time to keep scroll batch for scroll requests
-scroll_size: 200 # number of items returned in a particular scroll batch
-max_rows: 999 # default maximum rows returned in Elasticsearch query
-max_buckets: 999 # default maximum buckets in Elasticsearch aggregation
-index_bulk: 1000 # default items in a bulk request
-headers: {Content-Type: application/json} # headers to transfer in a http/https request
+import logging
+logging.basicConfig(
+    handlers=[logging.StreamHandler()],
+    level=logging.INFO,
+    format= "%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
 ```

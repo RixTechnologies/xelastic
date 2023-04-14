@@ -53,38 +53,6 @@ Created on Wed Apr 14 10:56:39 2021
     prefix-stub is used in index templates thus these are indexes with identic
     settings and mappings
 
-    esconf is the dictionary of the following form
-            connection:
-                current: <name of the selected connection>
-                <Name of the connection 1>:
-                    client: <client url>
-                    cert: <path to the certificte file>, optional
-                    usr: [<user name>, <password>] for authentification, optional
-                <Name of the connection 2>:
-                ... 
-            prefix: <prefix of the application index names>
-            source: <application default source ID>
-            indexes:
-                <index key 1>:
-                    stub: <stub>
-                    span_type: <valid span type id: d, m, q, y or n>
-                    date_field: <main date field of the index - the date field
-                            to split the indexes on>, must be set for all span
-                            types except n
-                    shared: <True or False>, specifies the index shared for all
-                            sources, default False, optional
-                <index key 2>
-                ...
-            keep: <time to keep scroll batch> defaults to '10s'
-            scroll_size: <amoun of the scroll batch in bytes> defaults to 100
-            max_buckets: <maximum buckets in es aggregation>, defaults to 99
-            index_bulk: <number of rows in an index bulk>, defaults to 1000
-            high: <Maximum allowed used disk space %>, defaults to 90%, execution
-                    is aborted if the used space is higher
-            headers: <headers for the http request>,
-                    defaults to {Content-Type: application/json}
-    
-
     Response codes: 200 (ok), 201 (created succesfully),
     400 (bad request), 401 (not authorised), 404 (not found)
 
@@ -124,9 +92,40 @@ class XElastic():
             esconf: configuration dictionary for the Elasticsearch connection
             mode: may set mode for all requests for the current class instance
 
-        If terms set queries and aggregations use this as additional filter
-        (i.e. xelastic instance gets access to a part of the index)
-
+        esconf is the dictionary of the following form
+        ```
+        connection:
+            current: <name of the selected connection>
+            <Name of the connection 1>:
+                client: <client url>
+                cert: <path to the certificte file> optional
+                usr: [<user name>, <password>] for authentification, optional
+            <Name of the connection 2>:
+            ... 
+        prefix: <prefix of the application index names>
+        source: <application default source ID>
+        indexes:
+            <index key 1>:
+                stub: <stub>
+                span_type: <valid span type id: d, m, q, y or n> daily,
+                    monthly, quaterly, yearly or not time spanned
+                date_field: <main date field of the index> the date field
+                    to split the indexes on>, must be set for all span
+                    types except n
+                shared: <True or False> specifies the index shared for all
+                    sources, default False, optional (sets the index source
+                    to shr)
+            <index key 2>
+            ...
+        keep: <time to keep scroll batch> defaults to '10s'
+        scroll_size: <amoun of the scroll batch in bytes> defaults to 100
+        max_buckets: <maximum buckets in es aggregation>, defaults to 99
+        index_bulk: <number of rows in an index bulk>, defaults to 1000
+        high: <Maximum allowed used disk space %>, defaults to 90%, execution
+                is aborted if the used space is higher
+        headers: <headers for the http request>,
+                defaults to {Content-Type: application/json}
+        ```
         """
         self.mode = mode
         self.index_key = None
@@ -350,6 +349,9 @@ class XElasticIndex(XElastic):
             index_key: the index key for the instance
             terms: terms dictionary of form {key1: value1, key2: value2, ...}
             mode: may set mode for all requests for the current class instance
+
+        If terms set queries and aggregations use this as additional filter
+        (i.e. xelastic instance gets access to a part of the index)
         """
         super().__init__(esconf, mode)
 
@@ -650,18 +652,17 @@ class XElasticIndex(XElastic):
             span = '*'
         else:
             local = time.localtime(epoch)
-            try:
-                span = {
-                    'y': time.strftime("%Y", local),
-                    'q': '-'.join((time.strftime("%Y", local),
-                               str(int(time.strftime("%m", local)) // 3 + 1))),
-                    'm': '-'.join((time.strftime("%Y", local),
-                                   time.strftime("%m", local))),
-                    'd': '-'.join((time.strftime("%Y", local),
-                        time.strftime("%m", local), time.strftime("%d", local)))
-                }[self.span_conf['span_type']]
-            except KeyError:
-                return None
+            # span_conf['span_type'] is validated upon class instantiation
+            span = {
+                'y': time.strftime("%Y", local),
+                'q': '-'.join((time.strftime("%Y", local),
+                           str(int(time.strftime("%m", local)) // 3 + 1))),
+                'm': '-'.join((time.strftime("%Y", local),
+                               time.strftime("%m", local))),
+                'd': '-'.join((time.strftime("%Y", local),
+                    time.strftime("%m", local), time.strftime("%d", local)))
+            }[self.span_conf['span_type']]
+
         return '-'.join((self.span_conf['prefix'], self.span_conf['stub'],
                          self.span_conf['source'], span))
 

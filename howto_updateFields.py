@@ -20,7 +20,6 @@ conf = {
         'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
 }
 
-
 xes = XElasticUpdate(conf, 'customers') # Create xelastic instance for customers index
 xes.set_upd_body('update1', upd_fields=['phone', 'email'])
 xes.set_upd_body('update2', upd_fields=['phone'], del_fields=['email'])
