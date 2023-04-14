@@ -404,7 +404,9 @@ for item in items:
 es_to.bulk_close() # Sends the latest bulk to the ES index
 </code></pre>
 <h2 id="how-to-retrieve-data-with-scroll">How to retrieve data with scroll</h2>
-<p>You should use index template and <a href="#how-to-configure-xelastic">conf dictionary</a> as well as fill index with some data before to use the script below. You may use <a href="#how-to-bulk-index-the-data">bulk index script</a> to fill the index.</p>
+<p>You should use index template and <a href="../reference/#src.xelastic.XElastic.__init__">conf dictionary</a>
+as well as fill index with some data before to use the script below.
+You may use <a href="#how-to-bulk-index-the-data">bulk index script</a> to fill the index.</p>
 <pre><code class="language-python">from xelastic import XElasticScroll
 es_from = XElasticScroll(conf, 'customers') # Create xelastic instance for customers index
 # Retrieve an item from the scroll batch. Retrieve next batch if the current one
@@ -415,7 +417,8 @@ while item := es_from.scroll():
 es_from.scroll_close() # Removes the scroll buffer
 </code></pre>
 <h2 id="how-to-update-the-fields-by-query-and-by-id">How to update the fields by query and by ID</h2>
-<p>You should use index template and <a href="#how-to-configure-xelastic">conf dictionary</a> as well as use script described in (link??) to create data before to use the script below.</p>
+<p>You should use index template and <a href="../reference/#src.xelastic.XElastic.__init__">conf dictionary</a>
+ as well as use script described in (link??) to create data before to use the script below.</p>
 <pre><code class="language-python">import time
 from xelastic import XElasticUpdate
 
