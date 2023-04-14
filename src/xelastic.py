@@ -256,7 +256,8 @@ class XElastic():
                 logger.error(f"{err}\n{command} body {data}\n{resp.text}")
                 raise
             except requests.exceptions.RequestException as err:
-                logger.error(err)
+                logger.error(f"{err}\n{command} body {data}")
+                raise
 
         return resp
 

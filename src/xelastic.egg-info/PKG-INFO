@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: xelastic
-Version: 2.4.13
+Version: 2.5.2
 Summary: "Easy interface class to Elasticsearch."
 Author: "Juris Rats"
 Author-email: "jurisra@gmail.com"
@@ -19,7 +19,7 @@ The xelastic class provides basic methods to handle requests to the elasticsearc
 
 When indexing the data xelastic will automatically save it into index of the correct time span.
 
-See installation instructions, how-to guides and the reference [here](https://RixTechnologies.github.io/xelastic)
+See installation instructions, how-to guides and the reference [here](https://RixTechnologies.github.io/xelastic).
 
 MIT License
 
