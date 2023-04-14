@@ -87,6 +87,7 @@ class XElastic():
     def __init__(self, esconf: dict, mode:Optional[str]=None):
         """
         Initializes the instance API for cluster level requests.
+        If esconf['high'] is set, checks the disk usage and aborts if higher.
         
         Parameters:
             esconf: configuration dictionary for the Elasticsearch connection
@@ -121,8 +122,9 @@ class XElastic():
         scroll_size: <amoun of the scroll batch in bytes> defaults to 100
         max_buckets: <maximum buckets in es aggregation>, defaults to 99
         index_bulk: <number of rows in an index bulk>, defaults to 1000
-        high: <Maximum allowed used disk space %>, defaults to 90%, execution
-                is aborted if the used space is higher
+        high: <Maximum allowed used disk space %>, defaults to None - disk
+            usage not checked; the application is aborted if high is set and disk
+            usage exceeds the set value
         headers: <headers for the http request>,
                 defaults to {Content-Type: application/json}
         ```
@@ -152,6 +154,13 @@ class XElastic():
         except:
             raise
         self.es_version = int(resp['version']['number'].split('.')[0])
+
+        high = esconf.get('high')
+        if high:
+            # Abort if the disk usage too high
+            usage = self.usage(mode)
+            assert usage <= high, \
+                f"Aborted. Disk usage {usage} exceeds the allowed {high}"
 
     def request(self, command:str='POST', endpoint:str='',
                 seq_primary:Tuple[int, int]=None, index_key:bool=True,

@@ -22,7 +22,9 @@ es_to.bulk_close() # Sends the latest bulk to the ES index
 ```
 
 ## How to retrieve data with scroll
-You should use index template and [conf dictionary](#how-to-configure-xelastic) as well as fill index with some data before to use the script below. You may use [bulk index script](#how-to-bulk-index-the-data) to fill the index.
+You should use index template and [conf dictionary](reference.md#src.xelastic.XElastic.__init__)
+as well as fill index with some data before to use the script below.
+You may use [bulk index script](#how-to-bulk-index-the-data) to fill the index.
 
 ```python
 from xelastic import XElasticScroll
@@ -35,7 +37,8 @@ while item := es_from.scroll():
 es_from.scroll_close() # Removes the scroll buffer
 ```
 ## How to update the fields by query and by ID
- You should use index template and [conf dictionary](#how-to-configure-xelastic) as well as use script described in (link??) to create data before to use the script below.
+ You should use index template and [conf dictionary](reference.md#src.xelastic.XElastic.__init__)
+ as well as use script described in (link??) to create data before to use the script below.
 
 ```python
 import time

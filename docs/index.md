@@ -1,5 +1,5 @@
 ## How to install and set up xelastic
-* Download the whl file and install xelastic with a command
+* Go to Releases, download the whl file and install xelastic with a command
 ```
 pip install <path to the whl file on your computer>
 ```
@@ -9,7 +9,7 @@ pip install <path to the whl file on your computer>
 * indexes will be split by month on field *created*
 * we use a single source *src*
 * the prefix for our application indexes is *ta*
-> The above means our application indexes will have names ta-cst-src-\<yyyy-mm\> where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index
+> The above means our application indexes will have names ta-cst-src-&lt;yyyy-mm&gt; where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index
 
 * Create index template for cst index using ta-cst* as a template pattern; this will ensure the monthly indexes are created automatically when necessary
 * create the configuration dictionary ([see here](reference.md#src.xelastic.XElastic.__init__) for full description)
