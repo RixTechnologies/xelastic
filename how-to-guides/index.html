@@ -234,13 +234,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#how-to-set-xelastic-up" class="md-nav__link">
-    How to set xelastic up
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#how-to-bulk-index-the-data" class="md-nav__link">
     How to bulk index the data
   </a>
@@ -257,6 +250,27 @@
         <li class="md-nav__item">
   <a href="#how-to-update-the-fields-by-query-and-by-id" class="md-nav__link">
     How to update the fields by query and by ID
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-handle-exceptions" class="md-nav__link">
+    How to handle exceptions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-handle-update-conflicts" class="md-nav__link">
+    How to handle update conflicts
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-handle-logging" class="md-nav__link">
+    How to handle logging
   </a>
   
 </li>
@@ -311,13 +325,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#how-to-set-xelastic-up" class="md-nav__link">
-    How to set xelastic up
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#how-to-bulk-index-the-data" class="md-nav__link">
     How to bulk index the data
   </a>
@@ -334,6 +341,27 @@
         <li class="md-nav__item">
   <a href="#how-to-update-the-fields-by-query-and-by-id" class="md-nav__link">
     How to update the fields by query and by ID
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-handle-exceptions" class="md-nav__link">
+    How to handle exceptions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-handle-update-conflicts" class="md-nav__link">
+    How to handle update conflicts
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-handle-logging" class="md-nav__link">
+    How to handle logging
   </a>
   
 </li>
@@ -357,41 +385,18 @@
 
 
 <h1 id="how-to-guides">How-to guides</h1>
-<h2 id="how-to-set-xelastic-up">How to set xelastic up</h2>
-<ul>
-<li>Download the code file xelastic.py</li>
-<li>Design the indexes of your application, e.g.</li>
-<li>one index type cst with data of your customers having fields 'name', 'street_address', 'email', 'phone' and 'updated'</li>
-<li>indexes will be split by month on field 'updated'</li>
-<li>we will use one source src</li>
-<li>the prefix for our application indexes will be ta</li>
-<li>The above means our application indexes will have names ta-cst-src-\&lt;yyyy-mm> where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index</li>
-<li>Create index template for cst index using ta-cst* as a template pattern; this will ensure the monthly indexes are created automatically when necessary</li>
-<li>create the configuration dictionary (reference to full description of config dictionary)</li>
-</ul>
-<pre><code class="language-python">conf = {
-    'connection': {
-        'current': 'local',
-        'local': {'client': 'http://localhost:9200/'}},
-    'prefix': 'ta',
-    'source': 'src',
-    'indexes': {
-        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'updated'}}
-}
-</code></pre>
 <h2 id="how-to-bulk-index-the-data">How to bulk index the data</h2>
-<p>We assume that you have already created and saved into your ES cluster the index template for sample customers index.
-You can use here the sample. <a href="#how-to-set-xelastic-up">See here</a> for setup and conf sample.</p>
-<p>The script below will batch index to the customers index the data you will provide in the items list below.</p>
+<p>We assume that you have already created and saved into your ES cluster the index template for sample customers index.</p>
+<p>The script below will batch index to the customers index the data you will provide in the items list below.
+See <a href="../reference/#src.xelastic.XElastic.__init__">here</a> for the description of the conf parameter.</p>
 <pre><code class="language-python">import time
-from xelastic import xelastic
+from xelastic import XElasticBulk
 
 items = [{&quot;name&quot;: &quot;John&quot;, &quot;email&quot;: &quot;john@xelastic.com&quot;, &quot;phone&quot;: &quot;12345678&quot;}, ...]
 
-es_to = xelastic(conf, 'customers') # Create xelastic instance for customers index
-es_to.bulk_set() # Initialize the bulk indexing
+es_to = XElasticBulk(conf, 'customers') # Create xelastic instance for customers index
 for item in items:
-    item['updated'] = int(time.time()) # Set updated to the current timestamp
+    item['created'] = int(time.time()) # Set created to the current timestamp
     # Add the current item to the bulk buffer; this sends a bulk to ES index when
     # buffer is full
     es_to.bulk_index(item)
@@ -399,10 +404,9 @@ for item in items:
 es_to.bulk_close() # Sends the latest bulk to the ES index
 </code></pre>
 <h2 id="how-to-retrieve-data-with-scroll">How to retrieve data with scroll</h2>
-<p>You should use index template and <a href="#how-to-set-xelastic-up">conf dictionary</a> as well as fill index with some data before to use the script below. You may use <a href="#how-to-bulk-index-the-data">bulk index script</a> to fill the index.</p>
-<pre><code class="language-python">from xelastic import xelastic
-es_from = xelastic(conf, 'customers') # Create xelastic instance for customers index
-es_from.scroll_set() # Initialize the scroll requests
+<p>You should use index template and <a href="#how-to-configure-xelastic">conf dictionary</a> as well as fill index with some data before to use the script below. You may use <a href="#how-to-bulk-index-the-data">bulk index script</a> to fill the index.</p>
+<pre><code class="language-python">from xelastic import XElasticScroll
+es_from = XElasticScroll(conf, 'customers') # Create xelastic instance for customers index
 # Retrieve an item from the scroll batch. Retrieve next batch if the current one
 # is empty
 while item := es_from.scroll():
@@ -411,28 +415,59 @@ while item := es_from.scroll():
 es_from.scroll_close() # Removes the scroll buffer
 </code></pre>
 <h2 id="how-to-update-the-fields-by-query-and-by-id">How to update the fields by query and by ID</h2>
-<p>You should use index template and <a href="#how-to-set-xelastic-up">conf dictionary</a> as well as use script described in (link??) to create data before to use the script below.</p>
+<p>You should use index template and <a href="#how-to-configure-xelastic">conf dictionary</a> as well as use script described in (link??) to create data before to use the script below.</p>
 <pre><code class="language-python">import time
-from xelastic import xelastic
+from xelastic import XElasticUpdate
 
-xes = xelastic(conf, 'customers') # Create xelastic instance for customers index
+xes = XElasticUpdate(conf, 'customers') # Create xelastic instance for customers index
 xes.setUpdBody('update1', upd_fields=['phone', 'email'])
 xes.setUpdBody('update2', upd_fields=['phone'], del_fields=['email'])
 print(xes.upd_bodies)
 print()
 
 # update fields by query
-xes.updateFields('update1', xfilter={'term': {'name': 'Jane'}},
-                values = {'phone': '4242424242', 'email': 'Jane_new@xelastic.com'})
+xes.update_fields('update1', xfilter={'term': {'name': 'Jane'}},
+               values = {'phone': '4242424242', 'email': 'Jane_new@xelastic.com'})
 
-# update fields by item id  (points to the item for John)
+# update fields by item id
+xid = xes.get_ids(body={&quot;query&quot;: {&quot;term&quot;: {&quot;name&quot;: &quot;John&quot;}}})[0]
+
 # must specify xdate to identify the time span (and index) the item to update is located
-xes.updateFieldsById('update2', xid='v1iHxoYB1hLWYRnWTupi', xdate=int(time.time()),
-                values = {'phone': '66666666'})
+xes.update_fields_by_id('update2', xid=xid, xdate=int(time.time()),
+                values = {'phone': '66666666'}, refresh='wait_for')
 
 # Print the updated index
-hits, _ = xes.queryIndex()
+hits, _ = xes.query_index()
 print(hits)
+</code></pre>
+<h2 id="how-to-handle-exceptions">How to handle exceptions</h2>
+<p>All xelastic methods that do not provide specific exception handling just raise the catched exceptions to leave handling for the caller.
+Exceptions are:</p>
+<ul>
+<li>resource not found (exception not raised, None returned)</li>
+<li>VersionConflictEngineException - the exception raised when version conflict occurs while trying to update index (<a href="#how-to-handle-update-conflicts">see How to handle update conflicts</a>)</li>
+</ul>
+<h2 id="how-to-handle-update-conflicts">How to handle update conflicts</h2>
+<p>Elasticsearch uses a versioning system to manage conflicts that can occur when multiple users or processes
+try to modify the same document at the same time. A unique version of the document is identified by values of 
+metafields _seq_no and _primary_term. The application has to check the values of these fields
+when updating the document to ensure that it updates the right version of the document.</p>
+<p>A sample workflow of the document update:</p>
+<ul>
+<li>read the document with get_data and remember values of _seq_no and _primary_term</li>
+<li>make updates to the document</li>
+<li>save the document with save method and transfer the remembered _seq_no / _primary_term
+values in seq_primary parameter</li>
+<li>catch VersionConflictEngineException to identify a version conflict </li>
+</ul>
+<h2 id="how-to-handle-logging">How to handle logging</h2>
+<p>xelastic uses python basic logging. You may configure logging to match your preferences.
+E.g.:</p>
+<pre><code>import logging
+logging.basicConfig(
+    handlers=[logging.StreamHandler()],
+    level=logging.INFO,
+    format= &quot;%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s&quot;)
 </code></pre>
 
 
