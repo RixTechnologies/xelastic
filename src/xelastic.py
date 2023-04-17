@@ -2,48 +2,28 @@
 """
 Created on Wed Apr 14 10:56:39 2021
 
-    Elasticsearch interface class. Provides easy handling of scroll and bulk
-    requests as well as handling of time split indexes.
+    Elasticsearch interface classes provide for easy handling of scroll and bulk
+    requests as well as handling of time split indexes:
 
-    External methods XElastic
-        request
-        usage
-        delete_indexes
-    External methods XElasticIndex
-        ========== Retrieve data
-        get_data
-        get_source_fields
-        count_index
-        query_index
-        get_ids
-        agg_index
-        query_buckets
-        query_cardinality
-        ========== Handling spans
-        index_name
-        span_start
-        span_end
-        ========== Other
-        get_indexes
-        create_term_filter
-        mlt
-        set_refresh
-        save
-        delete_item
-    External methods XElasticUpdate
-        set_upd_body
-        update_fields
-        update_fields_by_id
-    External nethods XElasticScroll
-        scroll_total
-        scroll
-        scroll_close
-    External nethods XElasticBulk
-        bulk_index
-        bulk_close
-        ==========
+        XElastic: Base class, provides interface to general (not related to a
+            particular Elasticsearch index) requests to Elasticsearch cluster 
 
-    The xelastic class uses index names of the format: prefix-stub-source-span
+        XElasticIndex: Instance of this class links to a particular
+            Elasticsearch index and provides basic methods to retrieve, create
+            and update data; subclass of XElastic
+
+        XElasticUpdate: Provides interface for Elasticsearch _update and
+            _update_by_query; subclass of XElasticIndex
+
+        XElasticScroll: Provides interface for Elasticsearch scroll requests;
+            subclass of XElasticIndex
+
+        XElasticBulk: Provides interface for Elasticsearch bulk indexing
+            requests; subclass of XElasticIndex
+            
+
+    Classes XElasticIndex, XElasticUpdate, XElasticScroll and XElasticBulk
+    use index names of the format: prefix-stub-source-span
     Where
         prefix is shared by all indexes of the application
         stub identifies indexes of a particular type
@@ -52,6 +32,26 @@ Created on Wed Apr 14 10:56:39 2021
 
     prefix-stub is used in index templates thus these are indexes with identic
     settings and mappings
+
+    Globals:
+        SPAN_ALL: span name for spantype == 'n' ('all')
+
+        SHARED: source reference for nameS of the shared indexes ('shr')
+
+        VERSION_CONFLICT: Denomination of the version conflict as returned by
+            Elasticsearch ('version_conflict_engine_exception')
+
+        class VersionConflictEngineException(Exception): Exception returned by
+            xelastic in case of a version conflict
+
+
+    Most of the xelastic methods use mode parameter specifying the execution
+    mode of the method. Mode parameter may be set for class instance and/or for
+    a method. If both set - method setting takes precedence. Possible values:
+        None - regular mode; executes the request and does not log details.
+        f - fake (logs details and executes a fake request, that just returns
+                  the cluster info)
+        v - (or any value except f) verbose (logs execution details)
 
     Response codes: 200 (ok), 201 (created succesfully),
     400 (bad request), 401 (not authorised), 404 (not found)
@@ -72,7 +72,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 SPAN_ALL = 'all'        # span name for spantype == 'n'
-SHARED = 'shr'          # source reference for namef of the shared indexes
+SHARED = 'shr'          # source reference for names of the shared indexes
 
 VERSION_CONFLICT = 'version_conflict_engine_exception'
 
@@ -81,7 +81,33 @@ class VersionConflictEngineException(Exception):
 
 class XElastic():
     """
-    Elasticsearch interface class.
+    Elasticsearch base interface class provides means to execute general 
+    requests
+
+    Methods:
+    ```
+    request: wrapper for the requests.request method. All other methods of
+            this class and subclasses use this method to communicate with
+            Elasticsearch cluster
+
+    usage:  Returns the usage percent of the disk array hosting the
+            Elasticsearch cluster
+
+    delete_indexes: Deletes indexes
+    ```
+
+    Attributes:
+        mode: mode attribute - see module description above
+        index_key:
+            None for this class, used by subclasses
+        request_conf:
+            A dictionary of connection parameters
+        es_client:
+            Elasticsearch cluster client url
+        max_buckets:
+            Maximum buckets returned by aggregation requests, may be overriden
+        es_version:
+            Elasticsearch major version number (e.g. 8)
     """
 
     def __init__(self, esconf: dict, mode:Optional[str]=None):
@@ -345,7 +371,59 @@ class XElastic():
 # =============================================================================
 class XElasticIndex(XElastic):
     """
-    Adding single index methods
+    Class instance is tied to a particular index and handles requests to
+        this particular Elasticsearch index
+
+    Methods:
+    ```
+    ========== Retrieve data
+    get_data: Retrieves data of the particular item/document; returns a
+            dictionary of metadata and _source fields
+        
+    get_source_fields: Retrieves the _source fields of the particular item
+
+    count_index: Counts the items
+
+    query_index: Queries the index and retrieves the query results
+
+    get_ids: Retrieves the item ids
+
+    agg_index: Executes the aggregation request and returns the dictionary of
+            data as returned by Elasticsearch
+
+    query_buckets: Retrieves the bucket data of the given field
+
+    query_cardinality: Retrieves the cardinality data of the given field
+
+    ========== Handling spans
+    index_name: Assembles and returns the index name given the configuration
+                data
+
+    span_start: Calculates the starting time of the given time span
+
+    span_end: Calculates the end time of the given time span
+
+    ========== Other
+    get_indexes: Retrieves the names of the existing indexes for the index key
+                of the XElasticIndex class instance
+
+    create_term_filter: Creates an Elasticsearch term filter given the
+                        dictionary of fields and values
+
+    mlt: Assembles the more-like-this query
+
+    set_refresh: Sets the refresh interval for indexes related to the index key
+                of the instance of the XElasticIndex class
+
+    save: Saves the item into Elasticsearch index
+
+    delete_item: Deletes item from Elasticsearch index
+    ```
+    
+    Attributes:
+        terms:
+            A dictionary of key:value pairs to  use as a term filter for
+            filtering index items accessible by the class instance
     """
 
     def __init__(self, esconf: Dict[str, Any], index_key:Optional[str]=None,
@@ -439,7 +517,8 @@ class XElasticIndex(XElastic):
     def count_index(self, body:Dict[str, Any]=None, mode:Optional[str]=None
                     ) ->int:
         """
-        Counts the items in index_key according to the criteria in body
+        Counts the items in index_key according to the criteria in body.
+
         Adds self.terms filter if set
 
         Parameters:
@@ -459,7 +538,7 @@ class XElasticIndex(XElastic):
     def query_index(self, body:Dict[str, Any]=None, mode:Optional[str]=None
                     ) -> Tuple[Dict[str, Any], int]:
         """
-        Returns adictionary of requested rows and total count of matching rows
+        Returns a dictionary of requested rows and total count of matching rows
         
         Parameters:
             body: query body
@@ -533,7 +612,7 @@ class XElasticIndex(XElastic):
                      max_buckets:int=None, quiet:bool=False,
                      mode:Optional[str]=None) ->Tuple[Dict[str, int], int]:
         """
-        Retrieves the buckets data on <field>.
+        Retrieves the buckets data on &lt;field&gt;.
 
         Parameters:
             field: the field name to get buckets for
@@ -643,7 +722,8 @@ class XElasticIndex(XElastic):
 # =============================================================================
     def index_name(self, epoch:int=None) ->Optional[str]:
         """
-        Get index name for the stub, source and epoch.
+        Get index name for the epoch and XElasticIndex instance configuration
+        (prefix, stub and source).
 
         Parameters:
             epoch: time as epoch or None to specify all time spans
@@ -651,10 +731,12 @@ class XElasticIndex(XElastic):
         Returns:
             Index name for current time span and index_key
 
+        ```
         If span_type == 'n' SPAN_ALL is used as span in the index name
         Otherwise
             if epoch set span is calculated from the epoch
             else * is used for span (all spans addressed)
+        ```
         """
         if self.span_conf['span_type'] == 'n':
             span = SPAN_ALL
@@ -679,8 +761,8 @@ class XElasticIndex(XElastic):
     def span_start(self, span: str) -> Optional[int]:
         """
         Parameters:
-            span: The span part of the index name, forma depends on span_type
-                'yyyy' (y), 'yyyy-mm' (m or q), 'yyyy-mm-dd' (d)
+            span: The span part of the index name, format depends on span_type
+                ('yyyy' (y), 'yyyy-mm' (m or q), 'yyyy-mm-dd' (d))
 
         Returns:
             The start time of the span (epoch)
@@ -703,8 +785,8 @@ class XElasticIndex(XElastic):
     def span_end(self, span: str) -> Optional[int]:
         """
         Parameters:
-            span: The span part of the index name, forma depends on span_type
-                'yyyy' (y), 'yyyy-mm' (m or q), 'yyyy-mm-dd' (d)
+            span: The span part of the index name, format depends on span_type
+                ('yyyy' (y), 'yyyy-mm' (m or q), 'yyyy-mm-dd' (d))
 
         Returns:
             The end time of the span (epoch)
@@ -756,8 +838,8 @@ class XElasticIndex(XElastic):
 
     def create_term_filter(self, terms:Dict[str, Any]) ->list:
         """
-        Creates term filter ([{"term": {<field>: <value>}}, ...]) from the
-        <terms> dictionary
+        Creates term filter ([{"term": {&lt;field&gt;: &lt;value&gt;}}, ...])
+        from the &lt;terms&gt; dictionary.
 
         Parameters:
             terms: the dictionary of field names and values
@@ -794,7 +876,8 @@ class XElasticIndex(XElastic):
 
     def set_refresh(self, period:str='1s', mode:Optional[str]=None) -> bool:
         """
-        Sets refresh interval for the current index of key index_key
+        Sets refresh interval for indexes related to the index key of 
+        XElasticIndex instance.
 
         Parameters:
             period: refresh period to set
@@ -817,8 +900,9 @@ class XElasticIndex(XElastic):
              xdate:int=None, refresh:Union[str, bool, None]=None, mode:str=None
              ) ->str:
         """
-        Index an item
-        Adds to the data body self.terms to save the data of the terms fields
+        Indexes an item. Adds to the data body self.terms to save the data of
+        the terms fields (this ensures the created item belongs to the index
+        part identified by terms attribute of the XElasticIndex instance)
         
         Parameters:
             body: body of the REST request
@@ -831,7 +915,7 @@ class XElasticIndex(XElastic):
         Returns:
             id of the created item or None on failure
 
-        Throws the catched expressions
+        Throws the catched expressions.
         """
         if self.terms:
             for key, val in self.terms.items():
@@ -887,9 +971,23 @@ class XElasticIndex(XElastic):
 # =============================================================================
 class XElasticUpdate(XElasticIndex):
     """
-    Adding update methods to the XElastic
-    """
+    Adding update methods to the XElasticIndex
 
+    Nethods:
+    ```
+    set_upd_body: Sets configuration for the _update / _update_by_query request
+
+    update_fields: Updates Elasticsearch index using _update_by_query
+
+    update_fields_by_id: Updates an item in Elasticsearch index via _update
+                        request
+    ```
+
+    Attributes:
+        upd_bodies:
+            A dictionary of update scripts for use in _update / _update_by_query
+            requests
+    """
     def __init__(self, esconf: Dict[str, Any], index_key:Optional[str]=None,
                  terms:Optional[Dict[str, Any]]=None,
                  mode:Optional[str]=None):
@@ -912,7 +1010,7 @@ class XElasticUpdate(XElasticIndex):
         Create and save in upd_bodies the update dictionary. Uses _upd_fields to
         create script source.
         
-        Parameters.
+        Parameters:
             name: name of the update script
             upd_fields: fields to update
             del_fields: fields to remove
@@ -926,9 +1024,9 @@ class XElasticUpdate(XElasticIndex):
                      mode:Optional[str]=None) ->int:
         """
         Update / delete fields for items filtered by xfilter (update by query)
-        If update body <name> has update fields, <values> must be specified
+        If update body &lt;name&gt; has update fields, &lt;values&gt; must be specified
 
-        Parameters.
+        Parameters:
             name: name of the update body (created by set_upd_body)
             xfilter: query to select items for update
             values: a dictionary of field names and values, names must match
@@ -946,7 +1044,9 @@ class XElasticUpdate(XElasticIndex):
             number of updated items if updates successful, -1 otherwise
 
         Logs errors on failure
+        ```
         {"took": ?, "timed_out": false, "total": ?, "updated": ?, ...}
+        ```
         """
         body = self.upd_bodies[name]
         body['query'] = xfilter
@@ -1001,11 +1101,13 @@ class XElasticUpdate(XElasticIndex):
         Rethrows catched exceptions
 
         update response has form
+        ```
             {'_index': ?, '_type': '_doc', '_id': ?, '_version': ?,
             'result': 'updated', '_shards': {'total': ?, 'successful': ?, 'failed': ?},
             '_seq_no': ?, '_primary_term': ?}
             or None on failure        
-        
+        ```
+
         If <seq_primary> is specified as a tuple (item_seq, primary_term),
         updates only if the _item_seq and _primary_term of the item
         matches ones specified
@@ -1053,9 +1155,21 @@ class XElasticUpdate(XElasticIndex):
 # =============================================================================
 class XElasticScroll(XElasticIndex):
     """
-    Adding scroll methods to the XElastic
-    """
+    Adding scroll methods to the XElasticIndex
 
+    Methods:
+    ```
+    scroll_total: Returns a total number of items matching the scroll request
+
+    scroll: Retrieves the next item from the scroll bufer
+
+    scroll_close: Deletes the scroll bufer
+    ```
+
+    Attributes:
+        scroll_conf:
+            A dictionary of a scroll configuration data
+    """
     def __init__(self, esconf: Dict[str, Any], index_key:Optional[str]=None,
                  terms:Optional[Dict[str, Any]]=None,
                  body:Optional[Dict[str, Any]]=None,
@@ -1067,7 +1181,8 @@ class XElasticScroll(XElasticIndex):
             esconf: configuration dictionary for the Elasticsearch connection
             index_key: the index key for the instance
             terms: terms dictionary of form {key1: value1, key2: value2, ...}
-            body: query body to filter the items for scrolling
+            body: body of the scroll request, query filter of the body is merged
+                with terms filter
             mode: may set mode for all requests for the current class instance
         """
         super().__init__(esconf, index_key, terms, mode)
@@ -1181,7 +1296,20 @@ class XElasticScroll(XElasticIndex):
 # =============================================================================
 class XElasticBulk(XElasticIndex):
     """
-    Adding bulk indexing methods to the XElastic
+    Adding bulk indexing methods to the XElasticIndex
+
+    Methods:
+    ```
+    bulk_index: Adds next item to the bulk index; flushes buffer to the
+                Elasticsearch when full
+
+    bulk_close: Closes the bulk and flushes the remainder to the Elasticsearch
+                index
+    ```
+
+    Attributes:
+        bulk_conf:
+            A dictionary of a bulk requests configuration
     """
     def __init__(self, esconf: Dict[str, Any], index_key:str=None,
                  terms:Optional[Dict[str, Any]]=None,
@@ -1215,7 +1343,6 @@ class XElasticBulk(XElasticIndex):
 
         self.bulk_conf:Dict[str, Any] = {
             'max': xmax,
-            'main_mode': self.mode,  # saved to restore mode when close bulk
             'refresh': refresh
             }
         self._bulk_clear()
@@ -1239,6 +1366,8 @@ class XElasticBulk(XElasticIndex):
             xid: id of the item to index, if None id is generated by ES
             mode: the mode parameter
         """
+        assert self.bulk_conf['curr'] is not None, \
+            'Bulk indexing closed, create new instance of the XElasticBulk to proceed'
         assert self.bulk_conf['curr'] <= self.bulk_conf['max'], \
             "bulk counter overflow"
 
@@ -1263,7 +1392,8 @@ class XElasticBulk(XElasticIndex):
 
     def bulk_close(self, mode:Optional[str]=None) ->bool:
         """
-        Flushes the last batch to the index and sets refresh interval to 1 second
+        Flushes the last batch to the index and sets refresh interval to 1 second.
+        The instance can not be used further for bulk indexing requests.
         
         Parameters:
             mode: the mode parameter
@@ -1275,8 +1405,6 @@ class XElasticBulk(XElasticIndex):
             self._bulk_flush(mode=self._mode(mode), refresh=self.bulk_conf['refresh'])
         except:
             raise
-        # Resets the main mode of the class instance
-        self.mode = self.bulk_conf['main_mode']
         # indicates that bulk indexing is not initialized
         self.bulk_conf['curr'] = None
         resp = self.set_refresh(period='1s')
