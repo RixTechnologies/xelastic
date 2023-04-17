@@ -1020,7 +1020,7 @@ class XElasticUpdate(XElasticIndex):
                 "lang": "painless"}}
 
     def update_fields(self, name: str, xfilter: dict, values: dict=None,
-                     xdate=None, refresh:Union[str, bool, None]=None,
+                     xdate:int=None, refresh:Union[str, bool, None]=None,
                      mode:Optional[str]=None) ->int:
         """
         Update / delete fields for items filtered by xfilter (update by query)
