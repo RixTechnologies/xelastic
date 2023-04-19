@@ -1283,13 +1283,17 @@ class XElasticScroll(XElasticIndex):
         Parameters:
             mode: the mode parameter
         """
-        body = {"scroll_id" : self.scroll_conf['id']}
-        self.scroll_conf['buffer'] = None
-        try:
-            self.request(command='DELETE', endpoint='_search/scroll',
-                         index_key=False, body=body, mode=self._mode(mode))
-        except:
-            raise
+        scroll_id = self.scroll_conf.get('id')
+        if scroll_id:
+            body = {"scroll_id" : self.scroll_conf['id']}
+            self.scroll_conf['buffer'] = None
+            try:
+                self.request(command='DELETE', endpoint='_search/scroll',
+                             index_key=False, body=body, mode=self._mode(mode))
+            except:
+                raise
+        else:
+            pass  # If scroll_id not set, do nothing
 
 # =============================================================================
 #       Bulk API
