@@ -68,11 +68,12 @@ conf = {
 
 items = [{"name": "John", "email": "john@xelastic.com", "phone": "12345678"}, ...]
 
-es_to = XElasticBulk(conf, 'customers') # Create xelastic instance for customers index
+es_to = XElasticBulk(conf, 'customers') # Creates xelastic instance for
+                                        # customers index
 for item in items:
     item['created'] = int(time.time()) # Set created to the current timestamp
-    # Add the current item to the bulk buffer; this sends a bulk to ES index when
-    # buffer is full
+    # Add the current item to the bulk buffer; this sends a bulk to ES index
+    # when buffer is full
     es_to.bulk_index(item)
 
 es_to.bulk_close() # Sends the latest bulk to the ES index
@@ -82,7 +83,7 @@ es_to.bulk_close() # Sends the latest bulk to the ES index
 Please [create related index template](#how-to-create-index-templates) and fill
 the index with some data before you run the script below.
 You may use [bulk index script](#how-to-bulk-index-the-data) to fill the index.
-See [bulk indexing](#how-to-bulk-index-data) for a sample conf dictionary.
+See there as well for a sample conf dictionary.
 
 ```python
 from xelastic import XElasticScroll
