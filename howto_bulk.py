@@ -2,7 +2,7 @@
 """
 Sample script demonstrating xelastic bulk indexing
 
-Assumed that an index template is created:
+Assumed that an index template is created (see howto_templates.py):
     customer
     street_address
     email

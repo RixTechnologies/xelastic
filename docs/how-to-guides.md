@@ -1,13 +1,70 @@
 # How-to guides
+## How to create index templates
+All xelastic classes (XElastic, XElasticIndex, XElasticBulk, XElasticScroll and XElasticUpdate)
+use configuration dictionary when instantiating new instance of the class.
+Below is a sample configuration dictionary conf,
+see [here](reference.md#src.xelastic.XElastic.__init__) for the full description.
+
+The template creation method takes a number of parameters, see [here](reference.md#src.xelastic.XElastic.make_template)
+for full description
+```
+conf = {
+    'connection': {
+        'current': 'local',
+        'local': {'client': 'http://localhost:9200/'}},
+    'prefix': 'ta',
+    'source': 'src',
+    'timeout': 10,
+    'indexes': {
+        'customers': {'stub': 'cst', 'span_type': 'm',
+                      'date_field': 'created', 'refresh': '60s'}}
+   }
+
+index = {"number_of_shards": "1", "number_of_replicas": "0"}
+description = "sample customer data"
+properties = {
+    "name": {"type": "keyword"},
+    "email": {"type": "keyword"},
+    "phone": {"type": "keyword"},
+    "created": {"type": "date", "format": "epoch_second"}
+}
+
+xkey = 'customers'
+es = XElastic(conf)
+template = es.make_template(xkey, index=index, properties=properties,
+                          description=description)
+try:
+    es.set_template(xkey, template)
+except:
+    print('Template creation failed')
+```
+
+You can check if the template is created printing out its content
+```
+xkey = 'customers'
+print(f"==={xkey}===\n{es.get_template(xkey)}")
+```
+
 ## How to bulk index the data
-We assume that you have already created and saved into your ES cluster the index template for sample customers index.
+Please [create related index template](#how-to-create-index-templates) before you run the script below
 
 The script below will batch index to the customers index the data you will provide in the items list below.
-See [here](reference.md#src.xelastic.XElastic.__init__) for the description of the conf parameter.
+See [here](reference.md#src.xelastic.XElastic.__init__) for the full description of the conf parameter.
 
 ```python
 import time
 from xelastic import XElasticBulk
+
+conf = {
+    'connection': {
+        'current': 'local',
+        'local': {'client': 'http://localhost:9200/'}},
+    'prefix': 'ta',
+    'source': 'src',
+    'timeout': 10,
+    'indexes': {
+        'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
+   }
 
 items = [{"name": "John", "email": "john@xelastic.com", "phone": "12345678"}, ...]
 
@@ -22,9 +79,10 @@ es_to.bulk_close() # Sends the latest bulk to the ES index
 ```
 
 ## How to retrieve data with scroll
-You should use index template and [conf dictionary](reference.md#src.xelastic.XElastic.__init__)
-as well as fill index with some data before to use the script below.
+Please [create related index template](#how-to-create-index-templates) and fill
+the index with some data before you run the script below.
 You may use [bulk index script](#how-to-bulk-index-the-data) to fill the index.
+See [bulk indexing](#how-to-bulk-index-data) for a sample conf dictionary.
 
 ```python
 from xelastic import XElasticScroll
@@ -37,8 +95,10 @@ while item := es_from.scroll():
 es_from.scroll_close() # Removes the scroll buffer
 ```
 ## How to update the fields by query and by ID
- You should use index template and [conf dictionary](reference.md#src.xelastic.XElastic.__init__)
- as well as use script described in (link??) to create data before to use the script below.
+Please [create related index template](#how-to-create-index-templates) and fill
+the index with some data before you run the script below.
+You may use [bulk index script](#how-to-bulk-index-the-data) to fill the index,
+look there as well for a sample conf dictionary.
 
 ```python
 import time

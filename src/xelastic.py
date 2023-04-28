@@ -36,7 +36,7 @@ Created on Wed Apr 14 10:56:39 2021
     Globals:
         SPAN_ALL: span name for spantype == 'n' ('all')
 
-        SHARED: source reference for nameS of the shared indexes ('shr')
+        SHARED: source reference for names of shared indexes ('shr')
 
         VERSION_CONFLICT: Denomination of the version conflict as returned by
             Elasticsearch ('version_conflict_engine_exception')
@@ -130,7 +130,7 @@ class XElastic():
             <Name of the connection 2>:
             ... 
         prefix: <prefix of the application index names>
-        source: <application default source ID>
+        source: <application default source key>
         indexes:
             <index key 1>:
                 stub: <stub>
@@ -170,9 +170,15 @@ class XElastic():
             'headers': esconf.get('headers',
                                       {"Content-Type": "application/json"})
             }
+        self.prefix = esconf.get('prefix')
+        assert self.prefix, "Prefix not set in config.yaml / es"
+
         self.es_client = esconf['connection'][ckey]['client']
 
         self.max_buckets = esconf.get('max_buckets', 99)
+
+        self.indexes = esconf.get('indexes')
+        assert self.indexes, 'Indexes not set up in config.yaml / es'
 
         # Retrieve the Elasticsearch version
         try:
@@ -359,6 +365,144 @@ class XElastic():
                 success = False
         return success
 
+# =============================================================================
+#       Handling index templates
+# =============================================================================
+    def make_template(self, index_key:str, properties:Dict[str, Any],
+                      index:Dict[str, Any], description:str,
+                      dynamic:str='strict', analysis:Dict[str, Any]=None,
+                      version:int=1, priority:int=500, order:int=0,
+                      refresh_interval:str=None, mode:str=None) -> Dict[str, Any]:
+        """
+        Prepares ES template description from the template source data
+        
+        Index template for ES 6-
+            order
+            version
+            settings
+            mappings
+            aliases
+            
+        Index template for ES 7+
+            template
+              settings
+              mappings
+              aliases
+            priority (8+)
+            version
+            _meta (8+)
+
+        Parameters:
+            index_key: index key to create template for
+            properties: properties section of template configuration
+            index: index settings of the template
+            dynamic: strict (default) to prohibit adding mapping of new fields
+            analysis: analysis section of the template
+            version: template version
+            priority: template priority (lower takes precedence)
+            order: order parameter, used for older Elastic versions
+            refresh_interval: refresh interval setting at the index creation
+                may be used if large amounts of data may be indexed to a new time
+                span (which triggers creation of a new index)
+            mode: mode parameter
+        
+        Returns:
+            A body for the request to create index template
+        """
+        index_conf = self.indexes[index_key] # Index specific data
+
+        settings = {'index': index}
+        if ri := refresh_interval: # set refresh interval if specified
+            settings['refresh_interval'] = ri
+        if analysis:
+            settings['analysis'] = analysis
+        
+        mappings = {"dynamic": dynamic, "properties": properties}
+        templ = {"settings": settings,
+                "mappings": mappings,
+                "aliases": {}} 
+        if self.es_version >= 7: # ES 7+
+            templ = {"template": templ}
+
+        if self.es_version < 7: # ES up to 7
+            templ["order"] = order
+        elif self.es_version > 7: # Version 8+, do nothing for version 7
+            templ["priority"] = priority
+            templ["_meta"] = {"description": description}
+            templ["version"] = version
+
+        templ['index_patterns'] = f"{self.prefix}-{index_conf.get('stub')}-*"
+
+        if mode is not None:
+            logger = logging.getLogger(__name__)
+            logger.info(f"Created template request body:\n{templ}")
+        return templ
+
+    def _set_template_endpoint(self, index_key:str):
+        """
+        Creates the endpoint for template request
+        """
+        template_name = f"template-{self.prefix}-{index_key}"
+        # Create the endpoint
+        return f"_index_template/{template_name}" if self.es_version >= 7 \
+            else f"_template/{template_name}"
+        
+
+    def set_template(self, index_key:str, template_data:Dict[str, Any], mode:str=None):
+        """
+        Creates/updates Elasticsearch index template
+        Re-throws exceptions.
+
+        Parameters:
+            index_key: index key to create template for
+            template_data: body for the template creation request
+            mode: mode parameter
+        """
+        try:
+            self.request(command='PUT', body=template_data,
+                         endpoint=self._set_template_endpoint(index_key),
+                         mode=mode)
+        except:
+            raise
+
+    def get_template(self, index_key:str, mode:str=None) ->Dict[str, Any]:
+        """
+        Returns a dictionary of description of templates for the index_key.
+        The dictionary has template names as keys and template contents as
+        values
+
+        Parameters:
+            index_key: index key to create template for
+            mode: mode parameter
+
+        Returns:
+            The index template configuration (body for the template creation
+                request)
+        """
+        try:
+            resp = self.request(command='GET',
+                         endpoint=self._set_template_endpoint(index_key),
+                         mode=mode)
+        except:
+            raise
+        # Only one template returned
+        return resp.json()['index_templates'][0]['index_template']
+
+    def delete_template(self, index_key:str, mode:str=None):
+        """
+        Deletes the template related to the index_key
+
+        Parameters:
+            index_key: index key to delete template for
+            mode: mode parameter
+        """
+        try:
+            resp = self.request(command='DELETE',
+                         endpoint=self._set_template_endpoint(index_key),
+                         mode=mode)
+        except:
+            raise
+
     ###########################################
     def __str__(self):
         return f"client={self.es_client}"
@@ -403,6 +547,15 @@ class XElasticIndex(XElastic):
 
     span_end: Calculates the end time of the given time span
 
+    ========== Handling index templates
+    make_template: Creates a body for a request to create index template 
+
+    set_template: Creates index template in Elasticsearch cluster
+
+    get_template: Retrieves template description from Elasticsearch cluster
+
+    delete_template: Deletes the template from Elasticsearch cluster
+
     ========== Other
     get_indexes: Retrieves the names of the existing indexes for the index key
                 of the XElasticIndex class instance
@@ -446,14 +599,21 @@ class XElasticIndex(XElastic):
         self.terms = terms
         self.index_key = index_key
 
-        assert index_key in esconf['indexes'].keys(), \
+        assert index_key in self.indexes.keys(), \
                 f"Wrong index key {index_key}"
 
         # Handle index configuration
-        index_conf = esconf['indexes'][self.index_key]
+        index_conf = self.indexes[self.index_key]
+
+        assert index_conf.get('stub'), f"Stub not set for index {self.index_key}" 
         span_type = index_conf.get('span_type', 'n')
+
+        assert span_type in ('n','y','q','m','d'),\
+            f"Wrong index span type {span_type}"
+        assert any((span_type == 'n', index_conf.get('date_field'))), \
+            f"Date field must be set for index of span type {span_type}"
+
         self.span_conf = {
-            'prefix': esconf['prefix'],
             'span_type': span_type,
             'date_field': index_conf.get('date_field'),
             'stub': index_conf['stub'],
@@ -461,10 +621,6 @@ class XElasticIndex(XElastic):
                 else esconf['source']
             }
 
-        assert span_type in ('n','y','q','m','d'),\
-            f"Wrong index span type {span_type}"
-        assert any((span_type == 'n', self.span_conf['date_field'])), \
-            f"Date field must be set for index of span type {span_type}"
 
 # =============================================================================
 #       Retrieve data
@@ -755,7 +911,7 @@ class XElasticIndex(XElastic):
                     time.strftime("%m", local), time.strftime("%d", local)))
             }[self.span_conf['span_type']]
 
-        return '-'.join((self.span_conf['prefix'], self.span_conf['stub'],
+        return '-'.join((self.prefix, self.span_conf['stub'],
                          self.span_conf['source'], span))
 
     def span_start(self, span: str) -> Optional[int]:

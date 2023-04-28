@@ -13,16 +13,17 @@ from xelastic import XElasticScroll, XElasticBulk, XElasticUpdate
 def test_bulk_scroll_update_delete():
     """
     Test scenario:
-        1. Indexes the data to the customers index (template must be created)
-        2. Read in a scroll request
-        3. Update the data
-        4. Count records
-        5. Query the data and check
-        6. Retrieve the item ids
-        7. Delete an item and check
-        8. Retrieves the index name
-        9. Retrieve the names of the indexes available for the index key
-        10. Delete the index
+        1. Creates the index template
+        2. Indexes the data to the customers index
+        3. Read in a scroll request
+        4. Update the data
+        5. Count records
+        6. Query the data and check
+        7. Retrieve the item ids
+        8. Delete an item and check
+        9. Retrieves the index name
+        10. Retrieve the names of the indexes available for the index key
+        11. Delete the index
 
     Template to create
     PUT _index_template/template-xelastic
@@ -77,7 +78,38 @@ def test_bulk_scroll_update_delete():
     assert res, 'Cleaning failed'
 
     ###########################################################################
-    # Step 1. Index the data with a bulk indexing. This creates 3 items with 
+    # Step 1. Credate index template
+    ###########################################################################
+    template_data = {
+        'customers': {
+            'index': {"number_of_shards": "1", "number_of_replicas": "0"},
+            'description':  "sample customer data",
+            'properties': {
+                "name": {"type": "keyword"},
+                "email": {"type": "keyword"},
+                "phone": {"type": "keyword"},
+                "created": {"type": "date", "format": "epoch_second"}
+            }
+        }
+    }
+    # Retrieve configuration data for all indices
+    for xkey, xval in es.indexes.items():
+        template_conf = template_data[xkey]
+        template = es.make_template(xkey, **template_conf,
+                                    refresh_interval=xval.get('ri'))
+
+        # Create the index template
+        try:
+            es.set_template(xkey, template)
+        except Exception as err:
+            assert False, f"Step 1. Exception raised\n{err}"
+        # Retrieve template
+        content = es.get_template(xkey)
+        assert 'index_patterns' in content, \
+            f"Step 1. Invalid template {content}, no index_patterns key\n{content}"
+
+    ###########################################################################
+    # Step 2. Index the data with a bulk indexing. This creates 3 items with 
     # ids 1, 2 and 3 respectively.
     ###########################################################################
     # Create xelastic instance for bulk indexing of the customers index
@@ -93,7 +125,7 @@ def test_bulk_scroll_update_delete():
     es.bulk_close() # Sends the latest bulk to the ES index
 
     ###########################################################################
-    # Step 2. Retrieve the data with the scroll request and check the data
+    # Step 3. Retrieve the data with the scroll request and check the data
     ###########################################################################
     es = XElasticScroll(conf, 'customers')
     while item := es.scroll():
@@ -103,7 +135,7 @@ def test_bulk_scroll_update_delete():
     es.scroll_close() # Removes the scroll buffer
 
     ###########################################################################
-    # Step 3. Update data with update API
+    # Step 4. Update data with update API
     ###########################################################################
     es = XElasticUpdate(conf, 'customers') # Create xelastic instance for customers index
     es.set_upd_body('update1', upd_fields=['phone', 'email'])
@@ -121,35 +153,35 @@ def test_bulk_scroll_update_delete():
                     values = {'phone': '66666666'}, refresh='wait_for')
 
     ###########################################################################
-    # Step 4. Count the items in the index. There must be 3 records
+    # Step 5. Count the items in the index. There must be 3 records
     ###########################################################################
     es = XElasticIndex(conf, 'customers')
     count = es.count_index()
-    assert count == 3, f"Step 4. Must be 3 records, counted {count}"
-
-    ###########################################################################
-    # Step 5. Query the index and check the data
-    ###########################################################################
-    hits, count = es.query_index()
     assert count == 3, f"Step 5. Must be 3 records, counted {count}"
 
     ###########################################################################
-    # Step 6. Retrieve the item ids and check
+    # Step 6. Query the index and check the data
     ###########################################################################
-    ids = es.get_ids()
-    assert len(ids) == 3, f"Step 6. Must be 3 ids, retrieved {len(ids)}"
-    assert set(ids) == {'1', '2', '3'}, f"Step 6. Wrong ids - {ids}"
+    hits, count = es.query_index()
+    assert count == 3, f"Step 6. Must be 3 records, counted {count}"
 
     ###########################################################################
-    # Step 7. Delete an item
+    # Step 7. Retrieve the item ids and check
+    ###########################################################################
+    ids = es.get_ids()
+    assert len(ids) == 3, f"Step 7. Must be 3 ids, retrieved {len(ids)}"
+    assert set(ids) == {'1', '2', '3'}, f"Step 7. Wrong ids - {ids}"
+
+    ###########################################################################
+    # Step 8. Delete an item
     ###########################################################################
     resp = es.delete_item(xid='3', xdate=int(time.time()), refresh='wait_for')
     assert resp, 'Item deletion failed, see log'
     count = es.count_index()
-    assert count == 2, f"Step 7. Must be 2 records, counted {count}"
+    assert count == 2, f"Step 8. Must be 2 records, counted {count}"
 
     ###########################################################################
-    # Step 8. Retrieve the index name
+    # Step 9. Retrieve the index name
     ###########################################################################
     indexes = es.get_indexes()
     assert len(indexes) == 1, f"Step 7. Must be 1 index, retrieved {len(indexes)}"
@@ -157,17 +189,17 @@ def test_bulk_scroll_update_delete():
 
     gt = '-'.join(('ta', 'cst', 'src', time.strftime("%Y", local),
                            time.strftime("%m", local)))
-    assert indexes[0] == gt, f"Step 8. Wrong index name - {indexes[0]}"
+    assert indexes[0] == gt, f"Step 9. Wrong index name - {indexes[0]}"
 
     ###########################################################################
-    # Step 9. Retrieve the names of the indexes available for the index key
+    # Step 10. Retrieve the names of the indexes available for the index key
     ###########################################################################
     res = es.get_indexes()
-    assert res, 'Step 9. Retrieve index names failed'
+    assert res, 'Step 10. Retrieve index names failed'
 
     ###########################################################################
-    # Step 10. Delete the indexes
+    # Step 11. Delete the indexes
     ###########################################################################
     es = XElastic(conf)
     res = es.delete_indexes(indexes)
-    assert res, 'Step 10. Delete indexes failed'
+    assert res, 'Step 11. Delete indexes failed'
