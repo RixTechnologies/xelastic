@@ -14,6 +14,8 @@ services:
       - ./howto:/howto
       - ./tests:/tests
       # - docker-logs:/logs
+    ports:
+      - 8080:8080 # used by mkdocs serve
     networks:
       - elastic
 
@@ -24,14 +26,8 @@ services:
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
       - xpack.security.enabled=false
       - 'path.repo=./backups'
-      - 'path.data=/usr/share/elasticsearch/data'
-    volumes:
-      # - ./init.sh:/usr/share/elasticsearch/config/init.sh
-      - ./analysis:/usr/share/elasticsearch/config/analysis
-      - ./data:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-      # - 9300:9300
     networks:
       - elastic
 

@@ -3,14 +3,14 @@ site_description: Easy access to Elasticsearch indexes
 site_author: Juris Rāts
 
 remote_name: xelastic
-repo_url: https://github.com/RixTechnologies/xelastic/
+# When token expires github.com settings / developer settings / tokens
+repo_url: https://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@github.com/RixTechnologies/xelastic/
 
 theme:
   name: "material"
 
 plugins:
   - mkdocstrings
-  #- autorefs
 
 nav:
   - Quick Start: index.md
