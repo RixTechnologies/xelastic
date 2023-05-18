@@ -4,11 +4,12 @@ Created on Tue Mar 14 13:06:58 2023
 
 @author: juris.rats
 """
+import sys
 import time
-#import sys
 
-from xelastic import XElastic, XElasticIndex
-from xelastic import XElasticScroll, XElasticBulk, XElasticUpdate
+sys.path.append("..")
+from src.xelastic import XElastic, XElasticIndex
+from src.xelastic import XElasticScroll, XElasticBulk, XElasticUpdate
 
 def test_bulk_scroll_update_delete():
     """
@@ -53,8 +54,8 @@ def test_bulk_scroll_update_delete():
     """
     conf = {
         'connection': {
-            'current': 'local',
-            'local': {'client': 'http://localhost:9200/'}},
+            'current': 'docker',
+            'docker': {'client': 'http://elasticsearch:9200/'}},
         'prefix': 'ta',
         'source': 'src',
         'timeout': 10,

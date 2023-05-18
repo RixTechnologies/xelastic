@@ -8,6 +8,8 @@ import logging
 # Union, Set, List, Tuple, Collection, Any, Dict, Optional, NoReturn
 from typing import Dict, Any
 
+import sys
+sys.path.append("..")
 from src.xelastic import XElastic
 
 def set_templates(esconf:Dict[str, Any], template_data: Dict[str, Any]):
@@ -38,8 +40,8 @@ logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO,
 
 conf = {
     'connection': {
-        'current': 'local',
-        'local': {'client': 'http://localhost:9200/'}},
+        'current': 'docker',
+        'docker': {'client': 'http://elasticsearch:9200/'}},
     'prefix': 'ta',
     'source': 'src',
     'timeout': 10,

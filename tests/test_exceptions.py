@@ -4,11 +4,12 @@ Created on Thu Mar 23 13:23:44 2023
 
 @author: juris.rats
 """
-import pytest
+import sys
 import time
-# sys.path.append("src")
+import pytest
 
-from xelastic import XElastic, XElasticIndex, VersionConflictEngineException
+sys.path.append("..")
+from src.xelastic import XElastic, XElasticIndex, VersionConflictEngineException
 
 def test_exceptions():
     """
@@ -16,8 +17,8 @@ def test_exceptions():
     """
     conf = {
           'connection': {
-              'current': 'local',
-              'local': {'client': 'http://localhost:9200/'}},
+            'current': 'docker',
+            'docker': {'client': 'http://elasticsearch:9200/'}},
           'prefix': 'ta',
           'source': 'src',
           'indexes': {

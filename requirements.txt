@@ -1,0 +1,6 @@
+requests
+pytest
+build
+mkdocstrings
+mkdocstrings[python]
+mkdocs-material

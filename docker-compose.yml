@@ -1,0 +1,42 @@
+version: '3'
+services:
+  app:
+    image: xelastic-dev
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    volumes:
+      - ./src:/src
+      - ./docs:/docs
+      - ./dist:/dist
+      - ./howto:/howto
+      - ./tests:/tests
+      # - docker-logs:/logs
+    networks:
+      - elastic
+
+  elasticsearch:
+    image: elasticsearch:8.7.1
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+      - 'path.repo=./backups'
+      - 'path.data=/usr/share/elasticsearch/data'
+    volumes:
+      # - ./init.sh:/usr/share/elasticsearch/config/init.sh
+      - ./analysis:/usr/share/elasticsearch/config/analysis
+      - ./data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      # - 9300:9300
+    networks:
+      - elastic
+
+# volumes:
+#   docker-logs: {}
+
+networks:
+  elastic:

@@ -8,12 +8,14 @@ See sample_bulk for additional information
 @author: juris.rats
 """
 import time
+import sys
+sys.path.append("..")
 from src.xelastic import XElasticUpdate
 
 conf = {
     'connection': {
-        'current': 'local',
-        'local': {'client': 'http://localhost:9200/'}},
+        'current': 'docker',
+        'docker': {'client': 'http://elasticsearch:9200/'}},
     'prefix': 'ta',
     'source': 'src',
     'indexes': {

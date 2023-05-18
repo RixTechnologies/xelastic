@@ -7,12 +7,14 @@ Created on Thu Mar  9 15:26:41 2023
 
 @author: juris.rats
 """
+import sys
+sys.path.append("..")
 from src.xelastic import XElasticScroll
 
 conf = {
     'connection': {
-        'current': 'local',
-        'local': {'client': 'http://localhost:9200/'}},
+        'current': 'docker',
+        'docker': {'client': 'http://elasticsearch:9200/'}},
     'prefix': 'ta',
     'source': 'src',
     'indexes': {

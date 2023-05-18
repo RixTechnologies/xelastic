@@ -41,9 +41,11 @@ Created on Wed Apr 14 10:56:39 2021
         VERSION_CONFLICT: Denomination of the version conflict as returned by
             Elasticsearch ('version_conflict_engine_exception')
 
+        class ConnectionError(Exception): Exception returned by xelastic in
+            case if Elasticsearch not available or read time error encountered
+
         class VersionConflictEngineException(Exception): Exception returned by
             xelastic in case of a version conflict
-
 
     Most of the xelastic methods use mode parameter specifying the execution
     mode of the method. Mode parameter may be set for class instance and/or for
@@ -76,7 +78,11 @@ SHARED = 'shr'          # source reference for names of the shared indexes
 
 VERSION_CONFLICT = 'version_conflict_engine_exception'
 
+class ConnectionError(Exception):
+    """Container not available or read timeout"""
+    pass
 class VersionConflictEngineException(Exception):
+    """Incorrect version metadata when indexing data"""
     pass
 
 class XElastic():
@@ -243,6 +249,9 @@ class XElastic():
         In most cases called from request method. Directly used e.g. for bulk
         indexing. 
         
+        May raise ConnectionError and VersionConflictEngineException. Rethrows
+        exception in other cases.
+        
         See descriptions of the request method for details. The only difference
         is the parameter 'data' which is a 'body' dictionary of the request 
         method converted to json string.
@@ -279,16 +288,22 @@ class XElastic():
             try:
                 resp = requests.request(command, url, data = data, **self.request_conf)
                 resp.raise_for_status()
+            except requests.exceptions.ReadTimeout as err:
+                logger.error(f"ReadTimeout {err}\n{command} {data}")
+                raise ConnectionError(err)
+            except requests.exceptions.ConnectionError as err:
+                logger.error(f"ConnectionError {err}\n{command} {data}")
+                raise ConnectionError(err)
             except requests.exceptions.HTTPError as err:
                 status_code = err.response.status_code
                 if status_code == 404: # resource not found
                     return None  # Return nothing
                 if status_code == 409: # version conflict
                     raise VersionConflictEngineException(err)
-                logger.error(f"{err}\n{command} body {data}\n{resp.text}")
+                logger.error(f"HTTPError {err}\n{command} {data}\n{resp.text}")
                 raise
-            except requests.exceptions.RequestException as err:
-                logger.error(f"{err}\n{command} body {data}")
+            except Exception as err:
+                logger.error(f"Exception {err}\n{command} {data}")
                 raise
 
         return resp
