@@ -4,6 +4,7 @@ Created on Thu Mar 23 13:23:44 2023
 
 @author: juris.rats
 """
+import os
 import sys
 import time
 import pytest
@@ -16,9 +17,7 @@ def test_exceptions():
     Connection to the Elasticsearch must be active
     """
     conf = {
-          'connection': {
-            'current': 'docker',
-            'docker': {'client': 'http://elasticsearch:9200/'}},
+          'connection': {'client': os.environ.get('ELASTICSEARCH_URL')},
           'prefix': 'ta',
           'source': 'src',
           'indexes': {

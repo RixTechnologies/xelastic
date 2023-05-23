@@ -61,6 +61,7 @@ Created on Wed Apr 14 10:56:39 2021
 @author: juris.rats
 """
 # pylint: disable=logging-fstring-interpolation
+import os
 import json
 import copy
 import logging
@@ -128,13 +129,9 @@ class XElastic():
         esconf is the dictionary of the following form
         ```
         connection:
-            current: <name of the selected connection>
-            <Name of the connection 1>:
-                client: <client url>
-                cert: <path to the certificte file> optional
-                usr: [<user name>, <password>] for authentification, optional
-            <Name of the connection 2>:
-            ... 
+            client: <client url (including a port)>
+            cert: <path to the certificte file> optional
+            usr: [<user name>, <password>] for authentification, optional
         prefix: <prefix of the application index names>
         source: <application default source key>
         indexes:
@@ -165,21 +162,19 @@ class XElastic():
         self.index_key = None
 
         # Retrieving specified connection and environment keys
-        ckey = esconf['connection']['current']
-        assert ckey in esconf['connection'], \
-            f"Wrong current connection key {ckey} in config.yaml"
-        usr = esconf['connection'][ckey].get('usr')
+        usr = esconf['connection'].get('usr')
         self.request_conf:Dict[str, str] = {
             'auth': None if not usr else HTTPBasicAuth(*usr),
             'timeout': esconf.get('timeout', 30), # Default to 30 secs,
-            'verify': esconf['connection'][ckey].get('cert', False),
+            'verify': esconf['connection'].get('cert', False),
             'headers': esconf.get('headers',
                                       {"Content-Type": "application/json"})
             }
         self.prefix = esconf.get('prefix')
         assert self.prefix, "Prefix not set in config.yaml / es"
 
-        self.es_client = esconf['connection'][ckey]['client']
+        # Add trailing slash if not there
+        self.es_client = os.path.join(esconf['connection']['client'], '')
 
         self.max_buckets = esconf.get('max_buckets', 99)
 

@@ -7,14 +7,12 @@ Created on Thu Mar  9 15:26:41 2023
 
 @author: juris.rats
 """
-import sys
+import sys, os
 sys.path.append("..")
 from src.xelastic import XElasticScroll
 
 conf = {
-    'connection': {
-        'current': 'docker',
-        'docker': {'client': 'http://elasticsearch:9200/'}},
+    'connection': {'client': os.environ.get('ELASTICSEARCH_URL')},
     'prefix': 'ta',
     'source': 'src',
     'indexes': {

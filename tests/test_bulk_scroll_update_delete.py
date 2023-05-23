@@ -4,6 +4,7 @@ Created on Tue Mar 14 13:06:58 2023
 
 @author: juris.rats
 """
+import os
 import sys
 import time
 
@@ -53,9 +54,7 @@ def test_bulk_scroll_update_delete():
     }
     """
     conf = {
-        'connection': {
-            'current': 'docker',
-            'docker': {'client': 'http://elasticsearch:9200/'}},
+        'connection': {'client': os.environ.get('ELASTICSEARCH_URL')},
         'prefix': 'ta',
         'source': 'src',
         'timeout': 10,

@@ -8,7 +8,7 @@ import logging
 # Union, Set, List, Tuple, Collection, Any, Dict, Optional, NoReturn
 from typing import Dict, Any
 
-import sys
+import sys, os
 sys.path.append("..")
 from src.xelastic import XElastic
 
@@ -28,6 +28,9 @@ def set_templates(esconf:Dict[str, Any], template_data: Dict[str, Any]):
         # Create the index template
         try:
             es.set_template(xkey, template)
+        except ConnectionError as err:
+            print(f"Connection error: {err}")
+            sys.exit(1)
         except:
             raise
 
@@ -39,9 +42,7 @@ logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO,
     format= "%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
 
 conf = {
-    'connection': {
-        'current': 'docker',
-        'docker': {'client': 'http://elasticsearch:9200/'}},
+    'connection': {'client': os.environ.get('ELASTICSEARCH_URL')},
     'prefix': 'ta',
     'source': 'src',
     'timeout': 10,

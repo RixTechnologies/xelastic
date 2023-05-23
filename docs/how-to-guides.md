@@ -9,9 +9,7 @@ The template creation method takes a number of parameters, see [here](reference.
 for full description
 ```
 conf = {
-    'connection': {
-        'current': 'local',
-        'local': {'client': 'http://localhost:9200/'}},
+    'connection': {'client': os.environ('ELASTICSEARCH_URL')},
     'prefix': 'ta',
     'source': 'src',
     'timeout': 10,
@@ -56,9 +54,7 @@ import time
 from xelastic import XElasticBulk
 
 conf = {
-    'connection': {
-        'current': 'local',
-        'local': {'client': 'http://localhost:9200/'}},
+    'connection': {'client': os.environ('ELASTICSEARCH_URL')},
     'prefix': 'ta',
     'source': 'src',
     'timeout': 10,

@@ -39,7 +39,7 @@ Created on Thu Mar  9 14:14:41 2023
 @author: juris.rats
 """
 import time, logging
-import sys
+import sys, os
 #sys.path.append("C:\\Users\\juris.rats\\AppData\\Local\\miniconda3\\Lib\\site-packages")
 
 sys.path.append("..")
@@ -49,9 +49,7 @@ logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO,
     format= "%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
 
 conf = {
-    'connection': {
-        'current': 'docker',
-        'docker': {'client': 'http://elasticsearch:9200/'}},
+    'connection': {'client': os.environ.get('ELASTICSEARCH_URL')},
     'prefix': 'ta',
     'source': 'src',
     'timeout': 10,
