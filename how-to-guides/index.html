@@ -401,9 +401,7 @@ see <a href="../reference/#src.xelastic.XElastic.__init__">here</a> for the full
 <p>The template creation method takes a number of parameters, see <a href="../reference/#src.xelastic.XElastic.make_template">here</a>
 for full description</p>
 <pre><code>conf = {
-    'connection': {
-        'current': 'local',
-        'local': {'client': 'http://localhost:9200/'}},
+    'connection': {'client': os.environ('ELASTICSEARCH_URL')},
     'prefix': 'ta',
     'source': 'src',
     'timeout': 10,
@@ -442,9 +440,7 @@ See <a href="../reference/#src.xelastic.XElastic.__init__">here</a> for the full
 from xelastic import XElasticBulk
 
 conf = {
-    'connection': {
-        'current': 'local',
-        'local': {'client': 'http://localhost:9200/'}},
+    'connection': {'client': os.environ('ELASTICSEARCH_URL')},
     'prefix': 'ta',
     'source': 'src',
     'timeout': 10,
