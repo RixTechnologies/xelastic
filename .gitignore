@@ -3,7 +3,7 @@
 *.pyc
 *.pyo
 env*
-.spyproject
+token.txt
 __pycache__/
 site/
 dist/
