@@ -12,6 +12,15 @@
 ** pytest
 
 #Deploying code
+##Commit and push (VSCode)
+
+##Build and deploy distributive
+```
+cd ..
+python -m build
+```
+* In github create new release, set tag (version), upload whl file form dist folder, save release.
+* Update docker files in other projects to use new xelastic version
 
 #Building and deploying documentation
 
