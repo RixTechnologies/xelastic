@@ -6,7 +6,7 @@
 #Testing
 ##Testing Howto samples
 * cd ..
-* check howto samples: python howto_templates.py
+* check howto samples: python howto/howto_templates.py
 ##Run unit tests
 ** cd tests
 ** pytest
@@ -23,4 +23,6 @@ python -m build
 * Update docker files in other projects to use new xelastic version
 
 #Building and deploying documentation
-
+* cd ..
+* mkdocs serve (check)
+* mkdocs gh-deploy

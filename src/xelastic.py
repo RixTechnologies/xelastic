@@ -159,6 +159,8 @@ class XElastic():
         ```
         """
         self.mode = mode
+        self.wait = esconf.get('wait', 5)
+        self.retries = esconf.get('retries', 10)
         self.index_key = None
 
         # Retrieving specified connection and environment keys
@@ -183,7 +185,7 @@ class XElastic():
 
         # Retrieve the Elasticsearch version
         try:
-            resp = self.request('GET', mode=mode).json()
+            resp = self.request_and_wait('GET', mode=mode).json()
         except:
             raise
         self.es_version = int(resp['version']['number'].split('.')[0])
@@ -234,6 +236,29 @@ class XElastic():
                                       refresh, data, xdate, mode)
         except:
             raise
+
+    def request_and_wait(self, command:str='POST', endpoint:str='',
+                          mode:Optional[str]=None) ->Optional[requests.Response]:
+        """
+        Wrapper on request method. Retries the request if the cluster is not
+        available. Returns None if the cluster is not available after
+        self.retries attempts.
+
+        Parameters:
+            command: REST command
+            endpoint: endpoint of the REST request
+        
+        Returns: Response object or None
+        """
+        logger = logging.getLogger(__name__)
+        for i in range(self.retries):
+            try:
+                resp = self.request(command, endpoint)
+                return resp
+            except Exception as e:
+                logger.error(f"Cluster not available: {e}")
+                time.sleep(self.wait)
+        return None
 
     def _request_json(self, command:str='POST', endpoint:str='',
             seq_primary:Tuple[int, int]=None, index_key:bool=True,
