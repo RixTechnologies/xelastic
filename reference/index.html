@@ -1689,7 +1689,8 @@ delete_indexes: Deletes indexes
 <span class="normal">543</span>
 <span class="normal">544</span>
 <span class="normal">545</span>
-<span class="normal">546</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">XElastic</span><span class="p">():</span>
+<span class="normal">546</span>
+<span class="normal">547</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">XElastic</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Elasticsearch base interface class provides means to execute general </span>
 <span class="sd">    requests</span>
@@ -1851,7 +1852,8 @@ delete_indexes: Deletes indexes
 <span class="sd">            command: REST command</span>
 <span class="sd">            endpoint: endpoint of the REST request</span>
 
-<span class="sd">        Returns: Response object or None</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          Response object or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retries</span><span class="p">):</span>
@@ -2474,8 +2476,7 @@ headers: &lt;headers for the http request&gt;,
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">375</span>
-<span class="normal">376</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">376</span>
 <span class="normal">377</span>
 <span class="normal">378</span>
 <span class="normal">379</span>
@@ -2500,7 +2501,8 @@ headers: &lt;headers for the http request&gt;,
 <span class="normal">398</span>
 <span class="normal">399</span>
 <span class="normal">400</span>
-<span class="normal">401</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indexes</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<span class="normal">401</span>
+<span class="normal">402</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indexes</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Deletes indexes of the list &lt;indexes&gt;</span>
 
@@ -2583,8 +2585,7 @@ headers: &lt;headers for the http request&gt;,
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">526</span>
-<span class="normal">527</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">527</span>
 <span class="normal">528</span>
 <span class="normal">529</span>
 <span class="normal">530</span>
@@ -2596,7 +2597,8 @@ headers: &lt;headers for the http request&gt;,
 <span class="normal">536</span>
 <span class="normal">537</span>
 <span class="normal">538</span>
-<span class="normal">539</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_key</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">539</span>
+<span class="normal">540</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_key</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Deletes the template related to the index_key</span>
 
@@ -2687,8 +2689,7 @@ request)</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">503</span>
-<span class="normal">504</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">504</span>
 <span class="normal">505</span>
 <span class="normal">506</span>
 <span class="normal">507</span>
@@ -2708,7 +2709,8 @@ request)</p></td>
 <span class="normal">521</span>
 <span class="normal">522</span>
 <span class="normal">523</span>
-<span class="normal">524</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_key</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">524</span>
+<span class="normal">525</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_key</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns a dictionary of description of templates for the index_key.</span>
 <span class="sd">    The dictionary has template names as keys and template contents as</span>
@@ -2900,8 +2902,7 @@ span (which triggers creation of a new index)</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">406</span>
-<span class="normal">407</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">407</span>
 <span class="normal">408</span>
 <span class="normal">409</span>
 <span class="normal">410</span>
@@ -2968,7 +2969,8 @@ span (which triggers creation of a new index)</p></td>
 <span class="normal">471</span>
 <span class="normal">472</span>
 <span class="normal">473</span>
-<span class="normal">474</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">make_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_key</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">properties</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="normal">474</span>
+<span class="normal">475</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">make_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_key</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">properties</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                   <span class="n">index</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">description</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
                   <span class="n">dynamic</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;strict&#39;</span><span class="p">,</span> <span class="n">analysis</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">version</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">priority</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -3316,6 +3318,24 @@ self.retries attempts.</p>
     </tbody>
   </table>
 
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[requests.<span title="requests.Response">Response</span>]</code>
+          </td>
+          <td><p>Response object or None</p></td>
+        </tr>
+    </tbody>
+  </table>
+
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
         <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
@@ -3339,7 +3359,8 @@ self.retries attempts.</p>
 <span class="normal">258</span>
 <span class="normal">259</span>
 <span class="normal">260</span>
-<span class="normal">261</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">request_and_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="normal">261</span>
+<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">request_and_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
                       <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Wrapper on request method. Retries the request if the cluster is not</span>
@@ -3350,7 +3371,8 @@ self.retries attempts.</p>
 <span class="sd">        command: REST command</span>
 <span class="sd">        endpoint: endpoint of the REST request</span>
 
-<span class="sd">    Returns: Response object or None</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      Response object or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retries</span><span class="p">):</span>
@@ -3428,8 +3450,7 @@ Re-throws exceptions.</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">486</span>
-<span class="normal">487</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">487</span>
 <span class="normal">488</span>
 <span class="normal">489</span>
 <span class="normal">490</span>
@@ -3443,7 +3464,8 @@ Re-throws exceptions.</p>
 <span class="normal">498</span>
 <span class="normal">499</span>
 <span class="normal">500</span>
-<span class="normal">501</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_key</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">template_data</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">mode</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">501</span>
+<span class="normal">502</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_key</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">template_data</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">mode</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates/updates Elasticsearch index template</span>
 <span class="sd">    Re-throws exceptions.</span>
@@ -3523,8 +3545,7 @@ Re-throws exceptions.</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">331</span>
-<span class="normal">332</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">332</span>
 <span class="normal">333</span>
 <span class="normal">334</span>
 <span class="normal">335</span>
@@ -3539,7 +3560,8 @@ Re-throws exceptions.</p>
 <span class="normal">344</span>
 <span class="normal">345</span>
 <span class="normal">346</span>
-<span class="normal">347</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">int</span><span class="p">:</span>
+<span class="normal">347</span>
+<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieves disk usage</span>
 
@@ -3618,8 +3640,7 @@ bulk_close: Closes the bulk and flushes the remainder to the Elasticsearch
 
         <details class="quote">
           <summary>Source code in <code>src/xelastic.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1492</span>
-<span class="normal">1493</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1493</span>
 <span class="normal">1494</span>
 <span class="normal">1495</span>
 <span class="normal">1496</span>
@@ -3780,7 +3801,8 @@ bulk_close: Closes the bulk and flushes the remainder to the Elasticsearch
 <span class="normal">1651</span>
 <span class="normal">1652</span>
 <span class="normal">1653</span>
-<span class="normal">1654</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">XElasticBulk</span><span class="p">(</span><span class="n">XElasticIndex</span><span class="p">):</span>
+<span class="normal">1654</span>
+<span class="normal">1655</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">XElasticBulk</span><span class="p">(</span><span class="n">XElasticIndex</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adding bulk indexing methods to the XElasticIndex</span>
 
@@ -4059,8 +4081,7 @@ esconf</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1509</span>
-<span class="normal">1510</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1510</span>
 <span class="normal">1511</span>
 <span class="normal">1512</span>
 <span class="normal">1513</span>
@@ -4093,7 +4114,8 @@ esconf</p></td>
 <span class="normal">1540</span>
 <span class="normal">1541</span>
 <span class="normal">1542</span>
-<span class="normal">1543</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esconf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">index_key</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="normal">1543</span>
+<span class="normal">1544</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esconf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">index_key</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">terms</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">refresh</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">refresh_interval</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">bulk_max</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -4193,8 +4215,7 @@ The instance can not be used further for bulk indexing requests.</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1588</span>
-<span class="normal">1589</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1589</span>
 <span class="normal">1590</span>
 <span class="normal">1591</span>
 <span class="normal">1592</span>
@@ -4212,7 +4233,8 @@ The instance can not be used further for bulk indexing requests.</p>
 <span class="normal">1604</span>
 <span class="normal">1605</span>
 <span class="normal">1606</span>
-<span class="normal">1607</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">bulk_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<span class="normal">1607</span>
+<span class="normal">1608</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">bulk_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Flushes the last batch to the index and sets refresh interval to 1 second.</span>
 <span class="sd">    The instance can not be used further for bulk indexing requests.</span>
@@ -4308,8 +4330,7 @@ The instance can not be used further for bulk indexing requests.</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1553</span>
-<span class="normal">1554</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1554</span>
 <span class="normal">1555</span>
 <span class="normal">1556</span>
 <span class="normal">1557</span>
@@ -4341,7 +4362,8 @@ The instance can not be used further for bulk indexing requests.</p>
 <span class="normal">1583</span>
 <span class="normal">1584</span>
 <span class="normal">1585</span>
-<span class="normal">1586</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">bulk_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">action</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="normal">1586</span>
+<span class="normal">1587</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">bulk_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">action</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adds the item data to the bulk. If bulk full flush it</span>
@@ -4484,8 +4506,7 @@ filtering index items accessible by the class instance</p></td>
 
         <details class="quote">
           <summary>Source code in <code>src/xelastic.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 551</span>
-<span class="normal"> 552</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 552</span>
 <span class="normal"> 553</span>
 <span class="normal"> 554</span>
 <span class="normal"> 555</span>
@@ -5091,7 +5112,8 @@ filtering index items accessible by the class instance</p></td>
 <span class="normal">1155</span>
 <span class="normal">1156</span>
 <span class="normal">1157</span>
-<span class="normal">1158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">XElasticIndex</span><span class="p">(</span><span class="n">XElastic</span><span class="p">):</span>
+<span class="normal">1158</span>
+<span class="normal">1159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">XElasticIndex</span><span class="p">(</span><span class="n">XElastic</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class instance is tied to a particular index and handles requests to</span>
 <span class="sd">        this particular Elasticsearch index</span>
@@ -5786,8 +5808,7 @@ filtering index items accessible by the class instance</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">617</span>
-<span class="normal">618</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">618</span>
 <span class="normal">619</span>
 <span class="normal">620</span>
 <span class="normal">621</span>
@@ -5826,7 +5847,8 @@ filtering index items accessible by the class instance</p></td>
 <span class="normal">654</span>
 <span class="normal">655</span>
 <span class="normal">656</span>
-<span class="normal">657</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esconf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">index_key</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="normal">657</span>
+<span class="normal">658</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esconf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">index_key</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">terms</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -5943,8 +5965,7 @@ aggregation request</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">780</span>
-<span class="normal">781</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">781</span>
 <span class="normal">782</span>
 <span class="normal">783</span>
 <span class="normal">784</span>
@@ -5963,7 +5984,8 @@ aggregation request</p></td>
 <span class="normal">797</span>
 <span class="normal">798</span>
 <span class="normal">799</span>
-<span class="normal">800</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">agg_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+<span class="normal">800</span>
+<span class="normal">801</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">agg_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
               <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Executes the aggregate request specfied by the body parameter.</span>
@@ -6059,8 +6081,7 @@ aggregation request</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">708</span>
-<span class="normal">709</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">709</span>
 <span class="normal">710</span>
 <span class="normal">711</span>
 <span class="normal">712</span>
@@ -6078,7 +6099,8 @@ aggregation request</p></td>
 <span class="normal">724</span>
 <span class="normal">725</span>
 <span class="normal">726</span>
-<span class="normal">727</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">count_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+<span class="normal">727</span>
+<span class="normal">728</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">count_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
                 <span class="p">)</span> <span class="o">-&gt;</span><span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Counts the items in index_key according to the criteria in body.</span>
@@ -6163,8 +6185,7 @@ from the &lt;terms&gt; dictionary.</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1030</span>
-<span class="normal">1031</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1031</span>
 <span class="normal">1032</span>
 <span class="normal">1033</span>
 <span class="normal">1034</span>
@@ -6174,7 +6195,8 @@ from the &lt;terms&gt; dictionary.</p>
 <span class="normal">1038</span>
 <span class="normal">1039</span>
 <span class="normal">1040</span>
-<span class="normal">1041</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_term_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">terms</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span><span class="nb">list</span><span class="p">:</span>
+<span class="normal">1041</span>
+<span class="normal">1042</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_term_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">terms</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span><span class="nb">list</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates term filter ([{&quot;term&quot;: {&amp;lt;field&amp;gt;: &amp;lt;value&amp;gt;}}, ...])</span>
 <span class="sd">    from the &amp;lt;terms&amp;gt; dictionary.</span>
@@ -6272,8 +6294,7 @@ from the &lt;terms&gt; dictionary.</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1127</span>
-<span class="normal">1128</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1128</span>
 <span class="normal">1129</span>
 <span class="normal">1130</span>
 <span class="normal">1131</span>
@@ -6298,7 +6319,8 @@ from the &lt;terms&gt; dictionary.</p>
 <span class="normal">1150</span>
 <span class="normal">1151</span>
 <span class="normal">1152</span>
-<span class="normal">1153</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">seq_primary</span><span class="p">:</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xdate</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="normal">1153</span>
+<span class="normal">1154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">seq_primary</span><span class="p">:</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xdate</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
            <span class="n">refresh</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Deletes from the index the item specified by xid</span>
@@ -6410,8 +6432,7 @@ id <xid> not found</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">663</span>
-<span class="normal">664</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">664</span>
 <span class="normal">665</span>
 <span class="normal">666</span>
 <span class="normal">667</span>
@@ -6434,7 +6455,8 @@ id <xid> not found</p></td>
 <span class="normal">684</span>
 <span class="normal">685</span>
 <span class="normal">686</span>
-<span class="normal">687</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">xdate</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+<span class="normal">687</span>
+<span class="normal">688</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">xdate</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
                <span class="p">)</span> <span class="o">-&gt;</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieve data for &lt;xid&gt; from the current index</span>
@@ -6534,8 +6556,7 @@ id <xid> not found</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">756</span>
-<span class="normal">757</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">757</span>
 <span class="normal">758</span>
 <span class="normal">759</span>
 <span class="normal">760</span>
@@ -6556,7 +6577,8 @@ id <xid> not found</p></td>
 <span class="normal">775</span>
 <span class="normal">776</span>
 <span class="normal">777</span>
-<span class="normal">778</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+<span class="normal">778</span>
+<span class="normal">779</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns list of ids of documents mathcing the query &lt;body&gt;</span>
@@ -6601,8 +6623,7 @@ id <xid> not found</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1018</span>
-<span class="normal">1019</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1019</span>
 <span class="normal">1020</span>
 <span class="normal">1021</span>
 <span class="normal">1022</span>
@@ -6611,7 +6632,8 @@ id <xid> not found</p></td>
 <span class="normal">1025</span>
 <span class="normal">1026</span>
 <span class="normal">1027</span>
-<span class="normal">1028</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">list</span><span class="p">:</span>
+<span class="normal">1028</span>
+<span class="normal">1029</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">list</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return a list of existing index names for the index key</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -6706,8 +6728,7 @@ id <xid> not found</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">689</span>
-<span class="normal">690</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">690</span>
 <span class="normal">691</span>
 <span class="normal">692</span>
 <span class="normal">693</span>
@@ -6723,7 +6744,8 @@ id <xid> not found</p></td>
 <span class="normal">703</span>
 <span class="normal">704</span>
 <span class="normal">705</span>
-<span class="normal">706</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_source_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">xdate</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+<span class="normal">706</span>
+<span class="normal">707</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_source_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">xdate</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
              <span class="p">)</span> <span class="o">-&gt;</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieve data for &lt;xid&gt; from the current index</span>
@@ -6811,8 +6833,7 @@ Otherwise
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">914</span>
-<span class="normal">915</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">915</span>
 <span class="normal">916</span>
 <span class="normal">917</span>
 <span class="normal">918</span>
@@ -6847,7 +6868,8 @@ Otherwise
 <span class="normal">947</span>
 <span class="normal">948</span>
 <span class="normal">949</span>
-<span class="normal">950</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">index_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="normal">950</span>
+<span class="normal">951</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">index_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get index name for the epoch and XElasticIndex instance configuration</span>
 <span class="sd">    (prefix, stub and source).</span>
@@ -6969,8 +6991,7 @@ and configuration <mlt_conf></p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1043</span>
-<span class="normal">1044</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1044</span>
 <span class="normal">1045</span>
 <span class="normal">1046</span>
 <span class="normal">1047</span>
@@ -6992,7 +7013,8 @@ and configuration <mlt_conf></p>
 <span class="normal">1063</span>
 <span class="normal">1064</span>
 <span class="normal">1065</span>
-<span class="normal">1066</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">mlt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xids</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">mlt_conf</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+<span class="normal">1066</span>
+<span class="normal">1067</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">mlt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xids</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">mlt_conf</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
         <span class="p">)</span><span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieves more-like-this query for document set identified by &lt;xids&gt;</span>
@@ -7123,8 +7145,7 @@ aggregated documents</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">802</span>
-<span class="normal">803</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">803</span>
 <span class="normal">804</span>
 <span class="normal">805</span>
 <span class="normal">806</span>
@@ -7162,7 +7183,8 @@ aggregated documents</p></td>
 <span class="normal">838</span>
 <span class="normal">839</span>
 <span class="normal">840</span>
-<span class="normal">841</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">query_buckets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="normal">841</span>
+<span class="normal">842</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">query_buckets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">max_buckets</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quiet</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -7277,8 +7299,7 @@ aggregated documents</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">843</span>
-<span class="normal">844</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">844</span>
 <span class="normal">845</span>
 <span class="normal">846</span>
 <span class="normal">847</span>
@@ -7299,7 +7320,8 @@ aggregated documents</p></td>
 <span class="normal">862</span>
 <span class="normal">863</span>
 <span class="normal">864</span>
-<span class="normal">865</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">query_cardinality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="normal">865</span>
+<span class="normal">866</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">query_cardinality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieve the number of unique values of &lt;field&gt; (cardinality)</span>
 
@@ -7399,8 +7421,7 @@ Adds self.terms filter if set</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">729</span>
-<span class="normal">730</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">730</span>
 <span class="normal">731</span>
 <span class="normal">732</span>
 <span class="normal">733</span>
@@ -7424,7 +7445,8 @@ Adds self.terms filter if set</p>
 <span class="normal">751</span>
 <span class="normal">752</span>
 <span class="normal">753</span>
-<span class="normal">754</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">query_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+<span class="normal">754</span>
+<span class="normal">755</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">query_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns a dictionary of requested rows and total count of matching rows</span>
@@ -7567,8 +7589,7 @@ part identified by terms attribute of the XElasticIndex instance)</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1090</span>
-<span class="normal">1091</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1091</span>
 <span class="normal">1092</span>
 <span class="normal">1093</span>
 <span class="normal">1094</span>
@@ -7602,7 +7623,8 @@ part identified by terms attribute of the XElasticIndex instance)</p>
 <span class="normal">1122</span>
 <span class="normal">1123</span>
 <span class="normal">1124</span>
-<span class="normal">1125</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seq_primary</span><span class="p">:</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="normal">1125</span>
+<span class="normal">1126</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seq_primary</span><span class="p">:</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
          <span class="n">xdate</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">refresh</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span>
          <span class="p">)</span> <span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -7714,8 +7736,7 @@ XElasticIndex instance.</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1068</span>
-<span class="normal">1069</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1069</span>
 <span class="normal">1070</span>
 <span class="normal">1071</span>
 <span class="normal">1072</span>
@@ -7734,7 +7755,8 @@ XElasticIndex instance.</p>
 <span class="normal">1085</span>
 <span class="normal">1086</span>
 <span class="normal">1087</span>
-<span class="normal">1088</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set_refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">period</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;1s&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">1088</span>
+<span class="normal">1089</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set_refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">period</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;1s&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sets refresh interval for indexes related to the index key of </span>
 <span class="sd">    XElasticIndex instance.</span>
@@ -7819,8 +7841,7 @@ XElasticIndex instance.</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 976</span>
-<span class="normal"> 977</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 977</span>
 <span class="normal"> 978</span>
 <span class="normal"> 979</span>
 <span class="normal"> 980</span>
@@ -7844,7 +7865,8 @@ XElasticIndex instance.</p>
 <span class="normal"> 998</span>
 <span class="normal"> 999</span>
 <span class="normal">1000</span>
-<span class="normal">1001</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">span_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="normal">1001</span>
+<span class="normal">1002</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">span_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parameters:</span>
 <span class="sd">        span: The span part of the index name, format depends on span_type</span>
@@ -7934,8 +7956,7 @@ XElasticIndex instance.</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">952</span>
-<span class="normal">953</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">953</span>
 <span class="normal">954</span>
 <span class="normal">955</span>
 <span class="normal">956</span>
@@ -7956,7 +7977,8 @@ XElasticIndex instance.</p>
 <span class="normal">971</span>
 <span class="normal">972</span>
 <span class="normal">973</span>
-<span class="normal">974</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">span_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="normal">974</span>
+<span class="normal">975</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">span_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parameters:</span>
 <span class="sd">        span: The span part of the index name, format depends on span_type</span>
@@ -8041,8 +8063,7 @@ scroll_close: Deletes the scroll bufer
 
         <details class="quote">
           <summary>Source code in <code>src/xelastic.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1347</span>
-<span class="normal">1348</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1348</span>
 <span class="normal">1349</span>
 <span class="normal">1350</span>
 <span class="normal">1351</span>
@@ -8181,7 +8202,8 @@ scroll_close: Deletes the scroll bufer
 <span class="normal">1484</span>
 <span class="normal">1485</span>
 <span class="normal">1486</span>
-<span class="normal">1487</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">XElasticScroll</span><span class="p">(</span><span class="n">XElasticIndex</span><span class="p">):</span>
+<span class="normal">1487</span>
+<span class="normal">1488</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">XElasticScroll</span><span class="p">(</span><span class="n">XElasticIndex</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adding scroll methods to the XElasticIndex</span>
 
@@ -8418,8 +8440,7 @@ with terms filter</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1364</span>
-<span class="normal">1365</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1365</span>
 <span class="normal">1366</span>
 <span class="normal">1367</span>
 <span class="normal">1368</span>
@@ -8447,7 +8468,8 @@ with terms filter</p></td>
 <span class="normal">1390</span>
 <span class="normal">1391</span>
 <span class="normal">1392</span>
-<span class="normal">1393</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esconf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">index_key</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="normal">1393</span>
+<span class="normal">1394</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esconf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">index_key</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">terms</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">body</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -8543,8 +8565,7 @@ If the buffer is empty, retrieves the next batch of items</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1432</span>
-<span class="normal">1433</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1433</span>
 <span class="normal">1434</span>
 <span class="normal">1435</span>
 <span class="normal">1436</span>
@@ -8579,7 +8600,8 @@ If the buffer is empty, retrieves the next batch of items</p>
 <span class="normal">1465</span>
 <span class="normal">1466</span>
 <span class="normal">1467</span>
-<span class="normal">1468</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">scroll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="normal">1468</span>
+<span class="normal">1469</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">scroll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieves the item from the scroll buffer.</span>
 <span class="sd">    If the process is not started yet, executes the first scroll request</span>
@@ -8662,8 +8684,7 @@ If the buffer is empty, retrieves the next batch of items</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1470</span>
-<span class="normal">1471</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1471</span>
 <span class="normal">1472</span>
 <span class="normal">1473</span>
 <span class="normal">1474</span>
@@ -8679,7 +8700,8 @@ If the buffer is empty, retrieves the next batch of items</p>
 <span class="normal">1484</span>
 <span class="normal">1485</span>
 <span class="normal">1486</span>
-<span class="normal">1487</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">scroll_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="normal">1487</span>
+<span class="normal">1488</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">scroll_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Removes the scroll buffer.</span>
 
@@ -8761,8 +8783,7 @@ If the buffer is empty, retrieves the next batch of items</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1395</span>
-<span class="normal">1396</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1396</span>
 <span class="normal">1397</span>
 <span class="normal">1398</span>
 <span class="normal">1399</span>
@@ -8774,7 +8795,8 @@ If the buffer is empty, retrieves the next batch of items</p>
 <span class="normal">1405</span>
 <span class="normal">1406</span>
 <span class="normal">1407</span>
-<span class="normal">1408</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">scroll_total</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">int</span><span class="p">:</span>
+<span class="normal">1408</span>
+<span class="normal">1409</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">scroll_total</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieves the total count of rows matching the scroll request</span>
 
@@ -8852,8 +8874,7 @@ requests</p></td>
 
         <details class="quote">
           <summary>Source code in <code>src/xelastic.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1163</span>
-<span class="normal">1164</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1164</span>
 <span class="normal">1165</span>
 <span class="normal">1166</span>
 <span class="normal">1167</span>
@@ -9030,7 +9051,8 @@ requests</p></td>
 <span class="normal">1338</span>
 <span class="normal">1339</span>
 <span class="normal">1340</span>
-<span class="normal">1341</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">XElasticUpdate</span><span class="p">(</span><span class="n">XElasticIndex</span><span class="p">):</span>
+<span class="normal">1341</span>
+<span class="normal">1342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">XElasticUpdate</span><span class="p">(</span><span class="n">XElasticIndex</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adding update methods to the XElasticIndex</span>
 
@@ -9294,8 +9316,7 @@ requests</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1182</span>
-<span class="normal">1183</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1183</span>
 <span class="normal">1184</span>
 <span class="normal">1185</span>
 <span class="normal">1186</span>
@@ -9308,7 +9329,8 @@ requests</p></td>
 <span class="normal">1193</span>
 <span class="normal">1194</span>
 <span class="normal">1195</span>
-<span class="normal">1196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esconf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">index_key</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="normal">1196</span>
+<span class="normal">1197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esconf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">index_key</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">terms</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -9390,8 +9412,7 @@ create script source.</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1198</span>
-<span class="normal">1199</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1199</span>
 <span class="normal">1200</span>
 <span class="normal">1201</span>
 <span class="normal">1202</span>
@@ -9403,7 +9424,8 @@ create script source.</p>
 <span class="normal">1208</span>
 <span class="normal">1209</span>
 <span class="normal">1210</span>
-<span class="normal">1211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set_upd_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">upd_fields</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="normal">1211</span>
+<span class="normal">1212</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set_upd_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">upd_fields</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">del_fields</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create and save in upd_bodies the update dictionary. Uses _upd_fields to</span>
@@ -9542,8 +9564,7 @@ what is set in set_upd_body</p></td>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1213</span>
-<span class="normal">1214</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1214</span>
 <span class="normal">1215</span>
 <span class="normal">1216</span>
 <span class="normal">1217</span>
@@ -9596,7 +9617,8 @@ what is set in set_upd_body</p></td>
 <span class="normal">1264</span>
 <span class="normal">1265</span>
 <span class="normal">1266</span>
-<span class="normal">1267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">xfilter</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="normal">1267</span>
+<span class="normal">1268</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">xfilter</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">xdate</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">refresh</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -9782,8 +9804,7 @@ matches ones specified</p>
 
       <details class="quote">
         <summary>Source code in <code>src/xelastic.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1269</span>
-<span class="normal">1270</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1270</span>
 <span class="normal">1271</span>
 <span class="normal">1272</span>
 <span class="normal">1273</span>
@@ -9837,7 +9858,8 @@ matches ones specified</p>
 <span class="normal">1321</span>
 <span class="normal">1322</span>
 <span class="normal">1323</span>
-<span class="normal">1324</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_fields_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="normal">1324</span>
+<span class="normal">1325</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_fields_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">xid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">xdate</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seq_primary</span><span class="p">:</span><span class="nb">tuple</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">refresh</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">mode</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>

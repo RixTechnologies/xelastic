@@ -330,9 +330,7 @@ with the mappings and settings specified;</p>
 <li>create the configuration dictionary (<a href="reference/#src.xelastic.XElastic.__init__">see here</a> for full description)</li>
 </ul>
 <pre><code class="language-python">conf = {
-    'connection': {
-        'current': 'local',
-        'local': {'client': 'http://localhost:9200/'}},
+    'connection': {'client': os.environ('ELASTICSEARCH_URL')},
     'prefix': 'ta',
     'source': 'src',
     'indexes': {

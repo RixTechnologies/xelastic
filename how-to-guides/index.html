@@ -424,9 +424,12 @@ properties = {
 
 xkey = 'customers'
 es = XElastic(conf)
+# Creates the dictionary of template configuration data
 template = es.make_template(xkey, index=index, properties=properties,
                           description=description)
 try:
+    # Creates the template template-&lt;prefix&gt;-&lt;xkey&gt; in
+    # Elasticsearch cluster
     es.set_template(xkey, template)
 except:
     print('Template creation failed')
@@ -456,8 +459,8 @@ items = [{&quot;name&quot;: &quot;John&quot;, &quot;email&quot;: &quot;john@xela
 es_to = XElasticBulk(conf, 'customers') # Creates xelastic instance for
                                         # customers index
 for item in items:
-    item['created'] = int(time.time()) # Set created to the current timestamp
-    # Add the current item to the bulk buffer; this sends a bulk to ES index
+    item['created'] = int(time.time()) # Sets created to the current timestamp
+    # Adds the current item to the bulk buffer; this sends a bulk to ES index
     # when buffer is full
     es_to.bulk_index(item)
 
@@ -470,9 +473,9 @@ You may use <a href="#how-to-bulk-index-the-data">bulk index script</a> to fill 
 See there as well for a sample conf dictionary.</p>
 <pre><code class="language-python">from xelastic import XElasticScroll
 
-es_from = XElasticScroll(conf, 'customers') # Create xelastic instance for customers index
-# Retrieve an item from the scroll batch. Retrieve next batch if the current one
-# is empty
+# Creates XElasticScroll instance for customers index
+es_from = XElasticScroll(conf, 'customers')
+# Retrieves items one by one
 while item := es_from.scroll():
   print(item)
 
@@ -492,18 +495,21 @@ xes.setUpdBody('update2', upd_fields=['phone'], del_fields=['email'])
 print(xes.upd_bodies)
 print()
 
-# update fields by query
+# Updates fields by query
 xes.update_fields('update1', xfilter={'term': {'name': 'Jane'}},
                values = {'phone': '4242424242', 'email': 'Jane_new@xelastic.com'})
 
-# update fields by item id
+# To update fields by item id one must specify item id and the date
+# (the date is not needed for indexes of span type 'n')
+#
+# Retrieves the item id
 xid = xes.get_ids(body={&quot;query&quot;: {&quot;term&quot;: {&quot;name&quot;: &quot;John&quot;}}})[0]
 
-# must specify xdate to identify the time span (and index) the item to update is located
+# Updates fields
 xes.update_fields_by_id('update2', xid=xid, xdate=int(time.time()),
                 values = {'phone': '66666666'}, refresh='wait_for')
 
-# Print the updated index
+# Prints the updated index
 hits, _ = xes.query_index()
 print(hits)
 </code></pre>
