@@ -5,7 +5,6 @@ site_author: Juris Rāts
 remote_name: xelastic
 
 # repo_name: xelastic
-# When token expires github.com settings / developer settings / tokens
 repo_url: "https://github.com/RixTechnologies/xelastic/"
 
 theme:

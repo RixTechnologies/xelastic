@@ -2,7 +2,7 @@ FROM python:3.10-slim
 
 RUN apt-get update && apt-get install -y git
 
-ENV GITHUB_TOKEN='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'
+# ENV GITHUB_TOKEN=''
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1

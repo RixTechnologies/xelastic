@@ -7,7 +7,10 @@ see [here](reference.md#src.xelastic.XElastic.__init__) for the full description
 
 The template creation method takes a number of parameters, see [here](reference.md#src.xelastic.XElastic.make_template)
 for full description
-```
+```python
+import os
+from xelastic import XElastic
+
 conf = {
     'connection': {'client': os.environ('ELASTICSEARCH_URL')},
     'prefix': 'ta',
@@ -29,9 +32,12 @@ properties = {
 
 xkey = 'customers'
 es = XElastic(conf)
+# Creates the dictionary of template configuration data
 template = es.make_template(xkey, index=index, properties=properties,
                           description=description)
 try:
+    # Creates the template template-<prefix>-<xkey> in
+    # Elasticsearch cluster
     es.set_template(xkey, template)
 except:
     print('Template creation failed')
@@ -50,7 +56,7 @@ The script below will batch index to the customers index the data you will provi
 See [here](reference.md#src.xelastic.XElastic.__init__) for the full description of the conf parameter.
 
 ```python
-import time
+import time, os
 from xelastic import XElasticBulk
 
 conf = {
@@ -67,8 +73,8 @@ items = [{"name": "John", "email": "john@xelastic.com", "phone": "12345678"}, ..
 es_to = XElasticBulk(conf, 'customers') # Creates xelastic instance for
                                         # customers index
 for item in items:
-    item['created'] = int(time.time()) # Set created to the current timestamp
-    # Add the current item to the bulk buffer; this sends a bulk to ES index
+    item['created'] = int(time.time()) # Sets created to the current timestamp
+    # Adds the current item to the bulk buffer; this sends a bulk to ES index
     # when buffer is full
     es_to.bulk_index(item)
 
@@ -83,9 +89,10 @@ See there as well for a sample conf dictionary.
 
 ```python
 from xelastic import XElasticScroll
-es_from = XElasticScroll(conf, 'customers') # Create xelastic instance for customers index
-# Retrieve an item from the scroll batch. Retrieve next batch if the current one
-# is empty
+
+# Creates XElasticScroll instance for customers index
+es_from = XElasticScroll(conf, 'customers')
+# Retrieves items one by one
 while item := es_from.scroll():
   print(item)
 
@@ -107,18 +114,21 @@ xes.setUpdBody('update2', upd_fields=['phone'], del_fields=['email'])
 print(xes.upd_bodies)
 print()
 
-# update fields by query
+# Updates fields by query
 xes.update_fields('update1', xfilter={'term': {'name': 'Jane'}},
                values = {'phone': '4242424242', 'email': 'Jane_new@xelastic.com'})
 
-# update fields by item id
+# To update fields by item id one must specify item id and the date
+# (the date is not needed for indexes of span type 'n')
+#
+# Retrieves the item id
 xid = xes.get_ids(body={"query": {"term": {"name": "John"}}})[0]
 
-# must specify xdate to identify the time span (and index) the item to update is located
+# Updates fields
 xes.update_fields_by_id('update2', xid=xid, xdate=int(time.time()),
                 values = {'phone': '66666666'}, refresh='wait_for')
 
-# Print the updated index
+# Prints the updated index
 hits, _ = xes.query_index()
 print(hits)
 ```
@@ -127,6 +137,7 @@ All xelastic methods that do not provide specific exception handling just raise 
 Exceptions are:
 
 * resource not found (exception not raised, None returned)
+* No connection to the Elasticsearch server or cluster - ConnectionError exception raised
 * VersionConflictEngineException - the exception raised when version conflict occurs while trying to update index ([see How to handle update conflicts](#how-to-handle-update-conflicts))
 
 ## How to handle update conflicts

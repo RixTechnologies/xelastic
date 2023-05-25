@@ -13,9 +13,11 @@ services:
       - ./dist:/dist
       - ./howto:/howto
       - ./tests:/tests
+      - ./setup.cfg:/setup.cfg
+      - ./dev_readme.md:/dev_readme.py
       # - docker-logs:/logs
     ports:
-      - 8080:8080 # used by mkdocs serve
+      - 8000:8000 # used by mkdocs serve
     networks:
       - elastic
 

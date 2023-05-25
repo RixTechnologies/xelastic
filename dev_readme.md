@@ -23,6 +23,8 @@ python -m build
 * Update docker files in other projects to use new xelastic version
 
 #Building and deploying documentation
+* elasticsearch container not used here
 * cd ..
-* mkdocs serve (check)
+* mkdocs serve -a 0.0.0.0:8000
+* git pull (--f-only -rebase or -base ??)
 * mkdocs gh-deploy

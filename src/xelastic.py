@@ -248,7 +248,8 @@ class XElastic():
             command: REST command
             endpoint: endpoint of the REST request
         
-        Returns: Response object or None
+        Returns:
+          Response object or None
         """
         logger = logging.getLogger(__name__)
         for i in range(self.retries):
