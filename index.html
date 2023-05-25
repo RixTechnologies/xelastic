@@ -211,6 +211,40 @@
     How to install and set up xelastic
   </a>
   
+    <nav class="md-nav" aria-label="How to install and set up xelastic">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-xelastic" class="md-nav__link">
+    Install xelastic
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-the-indexes-of-your-application" class="md-nav__link">
+    Design the indexes of your application
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-index-template" class="md-nav__link">
+    Create index template
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-the-configuration-dictionary" class="md-nav__link">
+    Create the configuration dictionary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -280,6 +314,40 @@
     How to install and set up xelastic
   </a>
   
+    <nav class="md-nav" aria-label="How to install and set up xelastic">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-xelastic" class="md-nav__link">
+    Install xelastic
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-the-indexes-of-your-application" class="md-nav__link">
+    Design the indexes of your application
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-index-template" class="md-nav__link">
+    Create index template
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-the-configuration-dictionary" class="md-nav__link">
+    Create the configuration dictionary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -303,32 +371,24 @@
   <h1>Quick Start</h1>
 
 <h2 id="how-to-install-and-set-up-xelastic">How to install and set up xelastic</h2>
-<ul>
-<li>Go to Releases, download the whl file and install xelastic with a command</li>
-</ul>
+<h3 id="install-xelastic">Install xelastic</h3>
+<p>Go to Releases, download the whl file and install xelastic with a command</p>
 <pre><code>pip install &lt;path to the whl file on your computer&gt;
 </code></pre>
-<ul>
-<li>Design the indexes of your application<blockquote>
+<h3 id="design-the-indexes-of-your-application">Design the indexes of your application</h3>
 <p>The sample configuration we use here is</p>
-</blockquote>
-</li>
+<ul>
 <li>a single customers index having fields <em>name</em>, <em>street_address</em>, <em>email</em>, <em>phone</em> and <em>created</em></li>
 <li>indexes will be split by month on field <em>created</em></li>
 <li>we use a single source <em>src</em></li>
-<li>
-<p>the prefix for our application indexes is <em>ta</em></p>
-<blockquote>
+<li>the prefix for our application indexes is <em>ta</em></li>
+</ul>
 <p>The above means our application indexes will have names ta-cst-src-&lt;yyyy-mm&gt; where yyyy is a year and mm is a month number; xelastic will take care new data is routed to respective monthly index</p>
-</blockquote>
-</li>
-<li>
-<p>Create index template for cst index using ta-cst* as a template pattern;
+<h3 id="create-index-template">Create index template</h3>
+<p>Create the index template for cst index using ta-cst* as a template pattern;
 this will ensure the monthly indexes are created automatically when necessary
 with the mappings and settings specified;</p>
-</li>
-<li>create the configuration dictionary (<a href="reference/#src.xelastic.XElastic.__init__">see here</a> for full description)</li>
-</ul>
+<h3 id="create-the-configuration-dictionary">Create the configuration dictionary</h3>
 <pre><code class="language-python">conf = {
     'connection': {'client': os.environ('ELASTICSEARCH_URL')},
     'prefix': 'ta',
@@ -337,7 +397,7 @@ with the mappings and settings specified;</p>
         'customers': {'stub': 'cst', 'span_type': 'm', 'date_field': 'created'}}
 }
 </code></pre>
-<p>Use How-To guides and Reference for further assistance.</p>
+<p><a href="reference/#src.xelastic.XElastic.__init__">See here</a> for full description of the configuration dictionary. Use How-To guides and Reference for further assistance.</p>
 
 
 
