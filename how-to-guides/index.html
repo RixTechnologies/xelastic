@@ -400,7 +400,10 @@ Below is a sample configuration dictionary conf,
 see <a href="../reference/#src.xelastic.XElastic.__init__">here</a> for the full description.</p>
 <p>The template creation method takes a number of parameters, see <a href="../reference/#src.xelastic.XElastic.make_template">here</a>
 for full description</p>
-<pre><code>conf = {
+<pre><code class="language-python">import os
+from xelastic import XElastic
+
+conf = {
     'connection': {'client': os.environ('ELASTICSEARCH_URL')},
     'prefix': 'ta',
     'source': 'src',
@@ -436,7 +439,7 @@ print(f&quot;==={xkey}===\n{es.get_template(xkey)}&quot;)
 <p>Please <a href="#how-to-create-index-templates">create related index template</a> before you run the script below</p>
 <p>The script below will batch index to the customers index the data you will provide in the items list below.
 See <a href="../reference/#src.xelastic.XElastic.__init__">here</a> for the full description of the conf parameter.</p>
-<pre><code class="language-python">import time
+<pre><code class="language-python">import time, os
 from xelastic import XElasticBulk
 
 conf = {
@@ -466,6 +469,7 @@ the index with some data before you run the script below.
 You may use <a href="#how-to-bulk-index-the-data">bulk index script</a> to fill the index.
 See there as well for a sample conf dictionary.</p>
 <pre><code class="language-python">from xelastic import XElasticScroll
+
 es_from = XElasticScroll(conf, 'customers') # Create xelastic instance for customers index
 # Retrieve an item from the scroll batch. Retrieve next batch if the current one
 # is empty
@@ -508,6 +512,7 @@ print(hits)
 Exceptions are:</p>
 <ul>
 <li>resource not found (exception not raised, None returned)</li>
+<li>No connection to the Elasticsearch server or cluster - ConnectionError exception raised</li>
 <li>VersionConflictEngineException - the exception raised when version conflict occurs while trying to update index (<a href="#how-to-handle-update-conflicts">see How to handle update conflicts</a>)</li>
 </ul>
 <h2 id="how-to-handle-update-conflicts">How to handle update conflicts</h2>
