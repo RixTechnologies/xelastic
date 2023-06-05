@@ -17,7 +17,8 @@ The above means our application indexes will have names ta-cst-src-&lt;yyyy-mm&g
 ### Create index template
 Create the index template for cst index using ta-cst* as a template pattern;
 this will ensure the monthly indexes are created automatically when necessary
-with the mappings and settings specified;
+with the mappings and settings specified ([see here for details](how-to-guides.md#how-to-create-index-templates)).
+
 ### Create the configuration dictionary
 
 ```python

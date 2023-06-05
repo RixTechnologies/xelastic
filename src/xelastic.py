@@ -130,7 +130,7 @@ class XElastic():
         ```
         connection:
             client: <client url (including a port)>
-            cert: <path to the certificte file> optional
+            cert: <path to the certificate file> optional
             usr: [<user name>, <password>] for authentification, optional
         prefix: <prefix of the application index names>
         source: <application default source key>
@@ -181,13 +181,14 @@ class XElastic():
         self.max_buckets = esconf.get('max_buckets', 99)
 
         self.indexes = esconf.get('indexes')
-        assert self.indexes, 'Indexes not set up in config.yaml / es'
+        assert self.indexes, 'Indexes not set up in config'
 
         # Retrieve the Elasticsearch version
         try:
             resp = self.request_and_wait('GET', mode=mode).json()
         except:
             raise
+        self.cluster_name = resp['cluster_name']
         self.es_version = int(resp['version']['number'].split('.')[0])
 
         high = esconf.get('high')
