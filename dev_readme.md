@@ -12,6 +12,8 @@
 ** pytest
 
 #Deploying code
+Update version number in setup.cfg
+
 ##Commit and push (VSCode)
 
 ##Build and deploy distributive

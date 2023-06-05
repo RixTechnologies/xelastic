@@ -183,7 +183,7 @@ class XElastic():
         self.indexes = esconf.get('indexes')
         assert self.indexes, 'Indexes not set up in config'
 
-        # Retrieve the Elasticsearch version
+        # Wait for Elasticsearch
         try:
             resp = self.request_and_wait('GET', mode=mode).json()
         except:
@@ -257,9 +257,11 @@ class XElastic():
             try:
                 resp = self.request(command, endpoint)
                 return resp
-            except Exception as e:
-                logger.error(f"Cluster not available: {e}")
+            except ConnectionError as exc:
+                logger.error(f"Cluster not available:\n{exc}")
                 time.sleep(self.wait)
+            except Exception as e:
+                logger.error(f"Request error:\n{e}")
         return None
 
     def _request_json(self, command:str='POST', endpoint:str='',
