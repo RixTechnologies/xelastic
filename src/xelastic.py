@@ -262,7 +262,8 @@ class XElastic():
                 time.sleep(self.wait)
             except Exception as e:
                 logger.error(f"Request error:\n{e}")
-        return None
+                raise
+        raise ConnectionError("No connection")
 
     def _request_json(self, command:str='POST', endpoint:str='',
             seq_primary:Tuple[int, int]=None, index_key:bool=True,

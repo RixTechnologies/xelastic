@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: xelastic
-Version: 2.6.5
+Version: 2.6.6
 Summary: "Easy interface class to Elasticsearch."
 Author: "Juris Rats"
 Author-email: "jurisra@gmail.com"
