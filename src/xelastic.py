@@ -186,7 +186,8 @@ class XElastic():
         # Wait for Elasticsearch
         try:
             resp = self.request_and_wait('GET', mode=mode).json()
-        except:
+        except Exception as err:
+            logger.error(f"{type(err).__name__} on request_and_wait\n{err}")
             raise
         self.cluster_name = resp['cluster_name']
         self.es_version = int(resp['version']['number'].split('.')[0])
@@ -194,7 +195,11 @@ class XElastic():
         high = esconf.get('high')
         if high:
             # Abort if the disk usage too high
-            usage = self.usage(mode)
+            try:
+                usage = self.usage(mode)
+            except Exception as err:
+                logger.error(f"{type(err).__name__} when checking usage\n{err}")
+                raise
             assert usage <= high, \
                 f"Aborted. Disk usage {usage} exceeds the allowed {high}"
 
@@ -224,7 +229,8 @@ class XElastic():
                 - v: (or any other value - verbose) to run and log data
 
         Returns:
-            requests.Response object of the requests library or None if resource not found
+            requests.Response object of the requests library or None if resource not
+            found
 
         Mode might be set by the methods parameter or by the instance variable
         If both set parameter has a precedence.
@@ -253,7 +259,7 @@ class XElastic():
           Response object or None
         """
         logger = logging.getLogger(__name__)
-        for i in range(self.retries):
+        for _ in range(self.retries):
             try:
                 resp = self.request(command, endpoint)
                 return resp
@@ -537,10 +543,12 @@ class XElastic():
             mode: mode parameter
         """
         try:
-            resp = self.request(command='DELETE',
+            self.request(command='DELETE',
                          endpoint=self._set_template_endpoint(index_key),
                          mode=mode)
-        except:
+        except Exception as err:
+            logger = logging.getLogger(__name__)
+            logger.error(f"{type(err).__name__} when deleting template\n{err}")
             raise
 
     ###########################################
