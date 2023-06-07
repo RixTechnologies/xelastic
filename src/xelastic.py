@@ -183,6 +183,8 @@ class XElastic():
         self.indexes = esconf.get('indexes')
         assert self.indexes, 'Indexes not set up in config'
 
+        logger = logging.getLogger(__name__)
+
         # Wait for Elasticsearch
         try:
             resp = self.request_and_wait('GET', mode=mode).json()
