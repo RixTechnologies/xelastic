@@ -793,7 +793,7 @@ class XElasticIndex(XElastic):
         return [hit['_id'] for  hit in hits]
 
     def agg_index(self, body:Dict[str, Any], mode:Optional[str]=None
-                  ) -> Optional[list]:
+                  ) -> Dict[str, Any]:
         """
         Executes the aggregate request specfied by the body parameter.
         
@@ -802,7 +802,7 @@ class XElasticIndex(XElastic):
             mode: the mode parameter
 
         Returns:
-            the aggregations dictionary returned by Elasticsearch
+            the aggregations list returned by Elasticsearch
                 aggregation request
 
         Adds self.terms filter if set
@@ -812,7 +812,7 @@ class XElasticIndex(XElastic):
                                 mode=self._mode(mode))
         except:
             raise
-        return  resp.json().get('aggregations', []) if resp else None
+        return  resp.json().get('aggregations', {}) if resp else None
 
     def query_buckets(self, field:str, query:Dict[str, Any]=None,
                      max_buckets:int=None, quiet:bool=False,
