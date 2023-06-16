@@ -802,7 +802,7 @@ class XElasticIndex(XElastic):
             mode: the mode parameter
 
         Returns:
-            the aggregations list returned by Elasticsearch
+            the aggregations dictionary returned by Elasticsearch
                 aggregation request
 
         Adds self.terms filter if set
