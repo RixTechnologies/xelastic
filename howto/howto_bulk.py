@@ -38,12 +38,14 @@ Created on Thu Mar  9 14:14:41 2023
 
 @author: juris.rats
 """
-import time, logging
-import sys, os
+import time
+import logging
+import sys
+import os
 #sys.path.append("C:\\Users\\juris.rats\\AppData\\Local\\miniconda3\\Lib\\site-packages")
 
 sys.path.append("..")
-from src.xelastic import XElasticBulk
+from src.xelastic import XElastic, XElasticIndex, XElasticBulk
 
 logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO,
     format= "%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s() ] %(message)s")
@@ -58,10 +60,20 @@ conf = {
    }
 
 items = [
-    {"name": "John", "email": "john@xelastic.com", "phone": "12345678"},
-    {"name": "Jane", "email": "jane@xelastic.com", "phone": "234567811"},
-    {"name": "Doris", "email": "doris@xelastic.com", "phone": "414156781"}
-    ]
+    {"name": "John", "email": "john@xelastic.com", "phone": "12345678",
+        "group": "A"},
+    {"name": "Jane", "email": "john@xelastic.com", "phone": "234567811",
+        "group": "A"},
+    {"name": "Doris", "email": "doris@xelastic.com", "phone": "414156781",
+        "group": "B"}
+]
+
+# Remove old indexes
+es = XElasticIndex(conf, "customers")
+indexes = es.get_indexes()
+es = XElastic(conf)
+res = es.delete_indexes(indexes)
+assert res, 'Cleaning failed'
 
 # Create xelastic instance for bulk indexing of the customers index
 es_to = XElasticBulk(conf, 'customers', refresh='wait_for')

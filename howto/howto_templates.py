@@ -59,10 +59,10 @@ tconf = {
             "name": {"type": "keyword"},
             "email": {"type": "keyword"},
             "phone": {"type": "keyword"},
+            "group": {"type": "keyword"},
             "created": {"type": "date", "format": "epoch_second"}
         }
     }
 }
 
 set_templates(conf, tconf)
-

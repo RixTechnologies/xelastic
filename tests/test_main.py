@@ -12,12 +12,15 @@ sys.path.append("..")
 from src.xelastic import XElastic, XElasticIndex
 from src.xelastic import XElasticScroll, XElasticBulk, XElasticUpdate
 
-def test_bulk_scroll_update_delete():
+def test_main():
     """
     Test scenario:
         1. Creates the index template
         2. Indexes the data to the customers index
         3. Read in a scroll request
+        4. Retrieve buckets
+        5. Retrieve cardinality
+
         4. Update the data
         5. Count records
         6. Query the data and check
@@ -41,6 +44,7 @@ def test_bulk_scroll_update_delete():
                       "name": {"type": "keyword"},
                       "email": {"type": "keyword"},
                       "phone": {"type": "keyword"},
+                      "group": {"type": "keyword"},
                       "created": {"type": "date", "format": "epoch_second"}
                 }
             },
@@ -63,9 +67,12 @@ def test_bulk_scroll_update_delete():
        }
     
     items = [
-        {"name": "John", "email": "john@xelastic.com", "phone": "12345678"},
-        {"name": "Jane", "email": "jane@xelastic.com", "phone": "234567811"},
-        {"name": "Doris", "email": "doris@xelastic.com", "phone": "414156781"}
+        {"name": "John", "email": "john@xelastic.com", "phone": "12345678",
+          "group": "A"},
+        {"name": "Jane", "email": "john@xelastic.com", "phone": "234567811",
+          "group": "A"},
+        {"name": "Doris", "email": "doris@xelastic.com", "phone": "414156781",
+          "group": "B"}
         ]
     
     ###########################################################################
@@ -88,6 +95,7 @@ def test_bulk_scroll_update_delete():
                 "name": {"type": "keyword"},
                 "email": {"type": "keyword"},
                 "phone": {"type": "keyword"},
+                "group": {"type": "keyword"},
                 "created": {"type": "date", "format": "epoch_second"}
             }
         }
@@ -134,6 +142,24 @@ def test_bulk_scroll_update_delete():
     
     es.scroll_close() # Removes the scroll buffer
 
+    ###########################################################################
+    # Step 4. Retrieve buckets 
+    ###########################################################################
+    es = XElasticIndex(conf, 'customers')
+    buckets, others = es.query_buckets('group')
+    assert buckets == {'A': 2, 'B': 1}, f"Step 4. Wrong buckets - {buckets}"
+    assert others == 0, f"Step 4. Wrong others - {others}"
+
+    ###########################################################################
+    # Step 5. Retrieve cardinality 
+    ###########################################################################
+    es = XElasticIndex(conf, 'customers')
+    buckets, others = es.query_cardinality('group', 'email')
+    assert buckets == {'A': 2, 'B': 1}, f"Step 4. Wrong buckets - {buckets}"
+    assert others == 0, f"Step 4. Wrong others - {others}"
+
+    
+    
     ###########################################################################
     # Step 4. Update data with update API
     ###########################################################################

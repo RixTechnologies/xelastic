@@ -855,12 +855,14 @@ class XElasticIndex(XElastic):
         xbuckets = {x['key']: x['doc_count'] for x in buckets}
         return xbuckets, others
 
-    def query_cardinality(self, field: str, mode:Optional[str]=None) -> int:
+    def query_cardinality(self, field: str, query:Dict[str, Any]=None,
+                           mode:Optional[str]=None) -> int:
         """
         Retrieve the number of unique values of <field> (cardinality)
 
         Parameters:
             field: the field name to get cardinality for
+            query: a query dictionary used to filter the items to aggregate
             mode: the mode parameter
 
         Returns:
@@ -874,6 +876,8 @@ class XElasticIndex(XElastic):
               "cardinality": {
                 "field": field
         }}}}
+        if query:
+            body['query'] = query
         try:
             return self.agg_index(body, self._mode(mode))["agg"]["value"]
         except:

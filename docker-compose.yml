@@ -14,8 +14,6 @@ services:
       - ./howto:/howto
       - ./tests:/tests
       - ./setup.cfg:/setup.cfg
-      - ./dev_readme.md:/dev_readme.py
-      # - docker-logs:/logs
     ports:
       - 8000:8000 # used by mkdocs serve
     networks:
@@ -30,6 +28,15 @@ services:
       - 'path.repo=./backups'
     ports:
       - 9200:9200
+    networks:
+      - elastic
+
+  cerebro:
+    image: cerebro-dev
+    environment:
+      - CEREBRO_HOSTS=elasticsearch:9200
+    ports:
+      - 9000:9000
     networks:
       - elastic
 
