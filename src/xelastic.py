@@ -1057,7 +1057,7 @@ class XElasticIndex(XElastic):
         Returns:
             The list of term filters
         """
-        return [{"term": {key, val}} for key, val in terms]
+        return [{"term": {key, val}} for key, val in terms.items()]
 
     def mlt(self, xids:list, mlt_conf:Dict[str, Any], mode:Optional[str]=None
             )-> Dict[str, Any]:
