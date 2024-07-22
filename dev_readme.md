@@ -1,3 +1,7 @@
+TODO - pytest does not run - eventually path is wrong, need to fix it
+pip install pytest
+pip install build
+
 # Preparing
 
 ## Configure cerebro and create image
