@@ -908,7 +908,7 @@ class XElasticIndex(XElastic):
         query = xbody.get('query')
         if not query:
             # If body has no query set query to the terms filter
-            xbody['query'] = xfilter
+            xbody['query'] = {'bool': {'filter': xfilter}}
         elif query and 'bool' in query:
             # the body query is a bool query
             if 'filter' not in query['bool']:

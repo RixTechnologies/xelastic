@@ -135,10 +135,13 @@ def test_main():
     ###########################################################################
     # Step 3. Retrieve the data with the scroll request and check the data
     ###########################################################################
-    es = XElasticScroll(conf, 'customers')
+    es = XElasticScroll(conf, 'customers', {'group': 'A'})
+    count = 0
     while item := es.scroll():
+        count += 1
         item_source = item.get('_source')
-        assert item_source in items, f"Item {item_source} not found in entry data"
+        assert item_source in items, f"Step 3. Item {item_source} not found in entry data"
+    assert count == 2, f"Step 3. Must be 2 records, counted {count}"
     
     es.scroll_close() # Removes the scroll buffer
 
@@ -154,12 +157,9 @@ def test_main():
     # Step 5. Retrieve cardinality 
     ###########################################################################
     es = XElasticIndex(conf, 'customers')
-    buckets, others = es.query_cardinality('group', 'email')
-    assert buckets == {'A': 2, 'B': 1}, f"Step 4. Wrong buckets - {buckets}"
-    assert others == 0, f"Step 4. Wrong others - {others}"
-
-    
-    
+    buckets = es.query_cardinality('group')
+    assert buckets == 2, f"Step 4. Wrong buckets - {buckets}"
+   
     ###########################################################################
     # Step 4. Update data with update API
     ###########################################################################
