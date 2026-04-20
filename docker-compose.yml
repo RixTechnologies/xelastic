@@ -32,7 +32,7 @@ services:
       - elastic
 
   cerebro:
-    image: cerebro-dev
+    image: lava-cerebro
     environment:
       - CEREBRO_HOSTS=elasticsearch:9200
     ports:

@@ -590,6 +590,8 @@ class XElasticIndex(XElastic):
     query_cardinality: Retrieves the cardinality data of the given field
 
     ========== Handling spans
+    switch_source: Switches the source of the index to the specified source
+
     index_name: Assembles and returns the index name given the configuration
                 data
 
@@ -671,6 +673,14 @@ class XElasticIndex(XElastic):
                 else esconf['source']
             }
 
+    def switch_source(self, source:str):
+        """
+        Switches the source of the index to the specified source
+        
+        Parameters:
+            source: the source key to switch to
+        """
+        self.span_conf['source'] = source
 
 # =============================================================================
 #       Retrieve data

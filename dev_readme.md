@@ -53,7 +53,6 @@ Update version number in setup.cfg
 
 ##Build and deploy distributive
 ```
-cd ..
 python -m build
 ```
 * TODO create tag and release locally??
